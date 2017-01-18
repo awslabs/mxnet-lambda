@@ -10,7 +10,7 @@ This is a reference application that uses a pre-built model using MXNet deployed
 
 ## Instructions
 
-- Create a lambda function from the CLI by running the following commands 
+- Create a Lambda function from the CLI by running the following commands 
 
 ```
 cd mxnet-lambda
@@ -19,7 +19,7 @@ aws lambda update-function-code --function-name mxnet-lambda --zip-file fileb://
 
 ```
 
-- Test the lambda function 
+- Test the Lambda function 
 ```
 aws lambda invoke --invocation-type RequestResponse --function-name mxnet-lambda --region us-east-1 --log-type Tail --payload '{"url": "https://images-na.ssl-images-amazon.com/images/G/01/img15/pet-products/small-tiles/23695_pets_vertical_store_dogs_small_tile_8._CB312176604_.jpg"}' output_file
 ```
