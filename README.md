@@ -1,6 +1,10 @@
 # MXNet package for AWS Lambda
 
-This is a reference application that predict labels for an image, using a pre-built model on MXNet deployed on [AWS Lambda](https://aws.amazon.com/lambda). You can leverage the precompiled libraries to build your prediction pipeline on Lambda.
+This is a reference application that predict labels along with their probablities for an image, using a pre-trained model on MXNet deployed on [AWS Lambda](https://aws.amazon.com/lambda). A Serverless Application Model template and instructions are provided to automate the creation of an API endpoint.
+ 
+You can leverage the precompiled libraries to build your prediction pipeline on Lambda.
+
+Additional models can be found in the [Model Zoo](http://data.mxnet.io/models/)
 
 ## Components
 
