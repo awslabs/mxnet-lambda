@@ -1,5 +1,8 @@
 '''
 Reference code to showcase MXNet model prediction on AWS Lambda 
+
+@author: Sunil Mallya (smallya@amazon.com)
+version: 0.2
 '''
 
 import os
@@ -10,7 +13,8 @@ import urllib2
 
 import mxnet as mx
 import numpy as np
-import cv2
+
+from PIL import Image
 from collections import namedtuple
 Batch = namedtuple('Batch', ['data'])
 
@@ -58,20 +62,37 @@ def predict(url, mod, synsets):
     '''
 
     req = urllib2.urlopen(url)
-    arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
-    cv2_img = cv2.imdecode(arr, -1)
-    img = cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
-    if img is None:
-        return None
-    img = cv2.resize(img, (224, 224))
-    img = np.swapaxes(img, 0, 2)
-    img = np.swapaxes(img, 1, 2) 
+    img_file = tempfile.NamedTemporaryFile()
+    img_file.write(req.read())
+    img_file.flush()
+ 
+    img = Image.open(img_file.name)
+
+    # PIL conversion
+    #size = 224, 224
+    #img = img.resize((224, 224), Image.ANTIALIAS)
+   
+    # center crop and resize
+    # ** width, height must be greater than new_width, new_height 
+    new_width, new_height = 224, 224
+    width, height = img.size   # Get dimensions
+    left = (width - new_width)/2
+    top = (height - new_height)/2
+    right = (width + new_width)/2
+    bottom = (height + new_height)/2
+
+    img = img.crop((left, top, right, bottom))
+    # convert to numpy.ndarray
+    sample = np.asarray(img)
+    # swap axes to make image from (224, 224, 3) to (3, 224, 224)
+    sample = np.swapaxes(sample, 0, 2)
+    img = np.swapaxes(sample, 1, 2)
     img = img[np.newaxis, :] 
-    
+ 
+    # forward pass through the network
     mod.forward(Batch([mx.nd.array(img)]))
     prob = mod.get_outputs()[0].asnumpy()
     prob = np.squeeze(prob)
-
     a = np.argsort(prob)[::-1]
     out = '' 
     for i in a[0:5]:
@@ -85,16 +106,16 @@ with open('synset.txt', 'r') as f:
 def lambda_handler(event, context):
 
     url = ''
-
-    # API Gateway GET method
-    if event['httpMethod'] == 'GET':
-        url = event['queryStringParameters']['url']
-    # API Gateway POST method
-    elif event['httpMethod'] == 'POST':
-        data = json.loads(event['body'])
-        url = data['url']
-    # Direct Lambda invocations
-    else:
+    try:
+        # API Gateway GET method
+        if event['httpMethod'] == 'GET':
+            url = event['queryStringParameters']['url']
+        # API Gateway POST method
+        elif event['httpMethod'] == 'POST':
+            data = json.loads(event['body'])
+            url = data['url']
+    except KeyError:
+        # direct invocation
         url = event['url']
     
     sym, arg_params, aux_params = load_model(f_symbol_file.name, f_params_file.name)
@@ -103,8 +124,6 @@ def lambda_handler(event, context):
     mod.set_params(arg_params, aux_params)
     labels = predict(url, mod, synsets)
     
-    #TODO: Handle error cases on failure
-
     out = {
             "headers": {
                 "content-type": "application/json",
