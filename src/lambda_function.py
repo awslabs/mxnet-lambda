@@ -96,7 +96,7 @@ def predict(url, mod, synsets):
     a = np.argsort(prob)[::-1]
     out = '' 
     for i in a[0:5]:
-        out += 'probability=%f, class=%s' %(prob[i], synsets[i])
+        out += 'probability=%f, class=%s , ' %(prob[i], synsets[i])
     out += "\n"
     return out
 
