@@ -1,6 +1,6 @@
 # MXNet package for AWS Lambda
 
-This is a reference application that predict labels along with their probablities for an image, using a pre-trained model on MXNet deployed on [AWS Lambda](https://aws.amazon.com/lambda). A Serverless Application Model template and instructions are provided to automate the creation of an API endpoint.
+This is a reference application that predict labels along with their probablities for an image, using a pre-trained model on MXNet deployed on [AWS Lambda](https://aws.amazon.com/lambda). A Serverless Application Model template (SAM) and instructions are provided to automate the creation of an API endpoint.
  
 You can leverage the precompiled libraries to build your prediction pipeline on Lambda.
 
@@ -39,7 +39,7 @@ aws lambda update-function-code --function-name mxnet-lambda-v2 --zip-file fileb
 aws lambda invoke --invocation-type RequestResponse --function-name mxnet-lambda-v2 --region us-east-1 --log-type Tail --payload '{"url": "https://images-na.ssl-images-amazon.com/images/G/01/img15/pet-products/small-tiles/23695_pets_vertical_store_dogs_small_tile_8._CB312176604_.jpg"}' output_file
 ```
 
-## Option 2. Creating an API endpoint with Serverles Application Model (SAM) 
+## Option 2: Creating an API endpoint with Serverles Application Model (SAM) 
 
 * In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 bucket in which SAM can create the deployment artifacts.
 
