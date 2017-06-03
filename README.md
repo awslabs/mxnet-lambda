@@ -1,8 +1,8 @@
 # MXNet package for AWS Lambda
 
-This is a reference application that predict labels along with their probablities for an image, using a pre-trained model on MXNet deployed on [AWS Lambda](https://aws.amazon.com/lambda). A Serverless Application Model template (SAM) and instructions are provided to automate the creation of an API endpoint.
+This is a reference application that predicts labels along with their probablities for an image using a pre-trained model with [Apache MXNet](http://mxnet.io) deployed on [AWS Lambda](https://aws.amazon.com/lambda). A Serverless Application Model template (SAM) and instructions are provided to automate the creation of an API endpoint.
  
-You can leverage the precompiled libraries to build your prediction pipeline on Lambda.
+You can leverage this package and its precompiled libraries to build your prediction pipeline on AWS Lambda with MXNet.
 
 Additional models can be found in the [Model Zoo](http://data.mxnet.io/models/)
 
@@ -27,7 +27,6 @@ Additional models can be found in the [Model Zoo](http://data.mxnet.io/models/)
 cd mxnet-lambda/src
 zip -9r lambda_function.zip  * 
 aws lambda create-function --function-name mxnet-lambda-v2 --zip-file fileb://lambda_function.zip --runtime python2.7 --region us-east-1 --role MY_ROLE_ARN --handler lambda_function.lambda_handler --memory-size 1536 --timeout 60
-
 ```
 - Update the Lambda function code
  
