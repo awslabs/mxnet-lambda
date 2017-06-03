@@ -6,6 +6,11 @@ You can leverage the precompiled libraries to build your prediction pipeline on 
 
 Additional models can be found in the [Model Zoo](http://data.mxnet.io/models/)
 
+## This repo shows how you can deploy Apache MXNet with AWS Lambda:
+
+- Using AWS CLI to create a Lambda function 
+- Using Serverless Application Model (SAM) to create a serverless application with API Gateway and AWS Lambda
+
 ## Components
 
 - MXNet 0.10.1
@@ -14,7 +19,7 @@ Additional models can be found in the [Model Zoo](http://data.mxnet.io/models/)
 
 * boto3 is included in the Lambda environment, if you want to try it locally please pip install boto3 in your virtualenv 
 
-## Instructions to deploy on AWS Lambda
+## Option 1: Instructions to deploy on AWS Lambda
 
 - Create a Lambda function from the CLI by running the following commands: 
 
@@ -34,7 +39,7 @@ aws lambda update-function-code --function-name mxnet-lambda-v2 --zip-file fileb
 aws lambda invoke --invocation-type RequestResponse --function-name mxnet-lambda-v2 --region us-east-1 --log-type Tail --payload '{"url": "https://images-na.ssl-images-amazon.com/images/G/01/img15/pet-products/small-tiles/23695_pets_vertical_store_dogs_small_tile_8._CB312176604_.jpg"}' output_file
 ```
 
-## Creating an API endpoint with Serverles Application Model (SAM) 
+## Option 2. Creating an API endpoint with Serverles Application Model (SAM) 
 
 * In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 bucket in which SAM can create the deployment artifacts.
 
@@ -91,7 +96,8 @@ curl https://MY_URL/predict?url=https://images-na.ssl-images-amazon.com/images/G
 curl -H "Content-Type: application/json" -X POST https://MY_URL/predict -d '{"url": "https://images-na.ssl-images-amazon.com/images/G/01/img15/pet-products/small-tiles/23695_pets_vertical_store_dogs_small_tile_8._CB312176604_.jpg"}'
 ```
 
-## Build MXNet package from source for AWS Lambda
+## [Advanced] Build MXNet package from source for AWS Lambda 
+### In case you wondered how the package was created
 
 - compile MXNet on Amazon Linux (AMI name: amzn-ami-hvm-2016.03.3.x86_64-gp2)
 
