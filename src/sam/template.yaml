@@ -13,16 +13,16 @@
 
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: MXNet Lambda Function 
+Description: MXNet Lambda Function
 Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      DefinitionUri: s3://smallya-useast-1/mx-sam/swagger.yaml #UPDATE
+      DefinitionUri: s3://<<bucket-name>>/swagger.yaml #UPDATE
       StageName: prod
       Variables:
         # NOTE: Before using this template, replace the <<region>> and <<account>> fields
-        #       in Lambda integration URI in the swagger file to region and accountId 
+        #       in Lambda integration URI in the swagger file to region and accountId
         #       you are deploying to
         LambdaFunctionName: !Ref LambdaFunction
 
@@ -31,10 +31,18 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python2.7
-      CodeUri: s3://smallya-useast-1/mx-sam/lambda_function.zip #UPDATE
-      Description: MXNet Lambda Function 
+      CodeUri: s3://<<bucket-name>>/lambda_function.zip #UPDATE
+      Description: MXNet Lambda Function
       MemorySize: 1536
       Timeout: 60
+      Policies:
+       - AWSLambdaExecute # Managed Policy
+       - Version: '2012-10-17' # Policy Document
+         Statement:
+           - Effect: Allow
+             Action:
+               - s3:GetObject
+             Resource: 'arn:aws:s3:::<<bucket-name>>/*'
       Events:
         ProxyApiRoot:
           Type: Api

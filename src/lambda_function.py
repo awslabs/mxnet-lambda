@@ -25,15 +25,16 @@ bucket = 'adhorn-mxnet-models'
 s3 = boto3.resource('s3')
 s3_client = boto3.client('s3')
 
-#params
+# params
 f_params_file = tempfile.NamedTemporaryFile()
 s3_client.download_file(bucket, f_params, f_params_file.name)
 f_params_file.flush()
 
-#symbol
+# symbol
 f_symbol_file = tempfile.NamedTemporaryFile()
 s3_client.download_file(bucket, f_symbol, f_symbol_file.name)
 f_symbol_file.flush()
+
 
 def load_model(s_fname, p_fname):
     """
@@ -56,6 +57,7 @@ def load_model(s_fname, p_fname):
             aux_params[name] = v
     return symbol, arg_params, aux_params
 
+
 def predict(url, mod, synsets):
     '''
     predict labels for a given image
@@ -69,8 +71,8 @@ def predict(url, mod, synsets):
     img = Image.open(img_file.name)
 
     # PIL conversion
-    #size = 224, 224
-    #img = img.resize((224, 224), Image.ANTIALIAS)
+    # size = 224, 224
+    # img = img.resize((224, 224), Image.ANTIALIAS)
 
     # center crop and resize
     # ** width, height must be greater than new_width, new_height
@@ -97,10 +99,12 @@ def predict(url, mod, synsets):
     out = {}
     for i in a[0:5]:
         out[synsets[i]] = str(prob[i])
-    return out
+    return json.dumps(out)
+
 
 with open('synset.txt', 'r') as f:
     synsets = [l.rstrip() for l in f]
+
 
 def lambda_handler(event, context):
 
@@ -117,9 +121,13 @@ def lambda_handler(event, context):
         # direct invocation
         url = event['url']
 
-    sym, arg_params, aux_params = load_model(f_symbol_file.name, f_params_file.name)
+    sym, arg_params, aux_params = load_model(
+        f_symbol_file.name, f_params_file.name)
     mod = mx.mod.Module(symbol=sym)
-    mod.bind(for_training=False, data_shapes=[('data', (1,3,224,224))])
+    mod.bind(
+        for_training=False,
+        data_shapes=[('data', (1, 3, 224, 224))]
+    )
     mod.set_params(arg_params, aux_params, allow_missing=True)
     labels = predict(url, mod, synsets)
 
@@ -132,3 +140,8 @@ def lambda_handler(event, context):
             "statusCode": 200
           }
     return out
+
+
+# [10/17/17 01:57 PM] Mallya, Sunil: actually.. try this
+# [10/17/17 01:58 PM] Mallya, Sunil: label_shapes=[('softmax_label', 1)] or label_shapes=[('softmax_label', (1))]
+# [10/17/17 01:58 PM] Mallya, Sunil: mod.bind(for_training=False, data_shapes=[('data', (1,3,224,224))], label_shapes=[('softmax_label', 1)])
