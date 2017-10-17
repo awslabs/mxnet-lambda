@@ -1,0 +1,4 @@
+*.pyc
+output_file
+*.zip
+template-out.yaml
