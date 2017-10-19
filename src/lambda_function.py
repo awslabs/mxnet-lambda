@@ -21,7 +21,7 @@ Batch = namedtuple('Batch', ['data'])
 f_params = 'resnet-18-0000.params'
 f_symbol = 'resnet-18-symbol.json'
 
-bucket = 'adhorn-mxnet-models'
+bucket = '<<bucket-name>>'
 s3 = boto3.resource('s3')
 s3_client = boto3.client('s3')
 
@@ -140,8 +140,3 @@ def lambda_handler(event, context):
             "statusCode": 200
           }
     return out
-
-
-# [10/17/17 01:57 PM] Mallya, Sunil: actually.. try this
-# [10/17/17 01:58 PM] Mallya, Sunil: label_shapes=[('softmax_label', 1)] or label_shapes=[('softmax_label', (1))]
-# [10/17/17 01:58 PM] Mallya, Sunil: mod.bind(for_training=False, data_shapes=[('data', (1,3,224,224))], label_shapes=[('softmax_label', 1)])

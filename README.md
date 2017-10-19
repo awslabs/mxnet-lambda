@@ -40,19 +40,23 @@ aws lambda invoke --invocation-type RequestResponse --function-name mxnet-lambda
 
 ## Option 2: Creating an API endpoint with Serverless Application Model (SAM)
 
-* The following steps assumes your are deploying the solution to AWS region us-east-1
-Note: if you which the deploy to other regions, make sure you modify all the needed resource `template.yaml` and `swagger.yaml`
+* The following steps assumes your are deploying the solution to the AWS region us-east-1
+Note: if you wish to deploy to another region, make sure you modify all the needed resources in the `template.yaml` and `swagger.yaml` files.
 
 Create an Amazon S3 bucket using the following AWS CLI command:
 
 ```
 aws s3 mb s3://<<bucket-name>> --region us-east-1
 ```
-Remember the bucket-name, it will be used for the next steps.
+Remember the <<bucket-name>>  as it will be used in the next steps.
 
-Before deploying the project to SAM for the first time, you'll need to update some variables in  `lambda_function.py` and `template.yaml`/`swagger.yaml` (found in `sam/` folder).
+Before deploying the project using Serverless Application Model (SAM), you'll need to update some variables in  `lambda_function.py` and `template.yaml`/`swagger.yaml` (found in `sam/` folder).
+bucket = 'adhorn-mxnet-models'
 
 ```
+# lambda_function.py
+Change the bucket name <<bucket-name>> to the bucket created in the previous step.
+
 # swagger.yaml
 Replace all <<account-ID>> by the account number of the AWS account where you deploy the solution
 
