@@ -69,9 +69,8 @@ class Arrayterator(object):
 
     Examples
     --------
-    >>> import numpy as np
     >>> a = np.arange(3 * 4 * 5 * 6).reshape(3, 4, 5, 6)
-    >>> a_itor = np.lib.arrayterator.Arrayterator(a, 2)
+    >>> a_itor = np.lib.Arrayterator(a, 2)
     >>> a_itor.shape
     (3, 4, 5, 6)
 
@@ -81,7 +80,7 @@ class Arrayterator(object):
 
     >>> for subarr in a_itor:
     ...     if not subarr.all():
-    ...         print subarr, subarr.shape
+    ...         print(subarr, subarr.shape)
     ...
     [[[[0 1]]]] (1, 1, 1, 2)
 
@@ -107,7 +106,7 @@ class Arrayterator(object):
         if not isinstance(index, tuple):
             index = (index,)
         fixed = []
-        length, dims = len(index), len(self.shape)
+        length, dims = len(index), self.ndim
         for slice_ in index:
             if slice_ is Ellipsis:
                 fixed.extend([slice(None)] * (dims-length+1))
@@ -149,17 +148,17 @@ class Arrayterator(object):
 
         See Also
         --------
-        `Arrayterator`
+        Arrayterator
         flatiter
 
         Examples
         --------
         >>> a = np.arange(3 * 4 * 5 * 6).reshape(3, 4, 5, 6)
-        >>> a_itor = np.lib.arrayterator.Arrayterator(a, 2)
+        >>> a_itor = np.lib.Arrayterator(a, 2)
 
         >>> for subarr in a_itor.flat:
         ...     if not subarr:
-        ...         print subarr, type(subarr)
+        ...         print(subarr, type(subarr))
         ...
         0 <type 'numpy.int32'>
 
@@ -187,7 +186,7 @@ class Arrayterator(object):
         start = self.start[:]
         stop = self.stop[:]
         step = self.step[:]
-        ndims = len(self.var.shape)
+        ndims = self.var.ndim
 
         while True:
             count = self.buf_size or reduce(mul, self.shape)

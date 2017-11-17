@@ -1,11 +1,9 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import division, absolute_import, print_function
 
 import sys
 
 import numpy as np
-from numpy.compat import sixu
 from numpy.testing import (
      TestCase, run_module_suite, assert_, assert_equal
 )
@@ -14,6 +12,54 @@ class TestArrayRepr(object):
     def test_nan_inf(self):
         x = np.array([np.nan, np.inf])
         assert_equal(repr(x), 'array([ nan,  inf])')
+
+    def test_subclass(self):
+        class sub(np.ndarray): pass
+
+        # one dimensional
+        x1d = np.array([1, 2]).view(sub)
+        assert_equal(repr(x1d), 'sub([1, 2])')
+
+        # two dimensional
+        x2d = np.array([[1, 2], [3, 4]]).view(sub)
+        assert_equal(repr(x2d),
+            'sub([[1, 2],\n'
+            '     [3, 4]])')
+
+        # two dimensional with flexible dtype
+        xstruct = np.ones((2,2), dtype=[('a', 'i4')]).view(sub)
+        assert_equal(repr(xstruct),
+            "sub([[(1,), (1,)],\n"
+            "     [(1,), (1,)]],\n"
+            "    dtype=[('a', '<i4')])"
+        )
+
+    def test_self_containing(self):
+        arr0d = np.array(None)
+        arr0d[()] = arr0d
+        assert_equal(repr(arr0d),
+            'array(array(..., dtype=object), dtype=object)')
+
+        arr1d = np.array([None, None])
+        arr1d[1] = arr1d
+        assert_equal(repr(arr1d),
+            'array([None, array(..., dtype=object)], dtype=object)')
+
+        first = np.array(None)
+        second = np.array(None)
+        first[()] = second
+        second[()] = first
+        assert_equal(repr(first),
+            'array(array(array(..., dtype=object), dtype=object), dtype=object)')
+
+    def test_containing_list(self):
+        # printing square brackets directly would be ambiguuous
+        arr1d = np.array([None, None])
+        arr1d[0] = [1, 2]
+        arr1d[1] = [3]
+        assert_equal(repr(arr1d),
+            'array([list([1, 2]), list([3])], dtype=object)')
+
 
 class TestComplexArray(TestCase):
     def test_str(self):
@@ -113,6 +159,35 @@ class TestArray2String(TestCase):
         assert_(np.array2string(s, formatter={'numpystr':lambda s: s*2}) ==
                 '[abcabc defdef]')
 
+    def test_structure_format(self):
+        dt = np.dtype([('name', np.str_, 16), ('grades', np.float64, (2,))])
+        x = np.array([('Sarah', (8.0, 7.0)), ('John', (6.0, 7.0))], dtype=dt)
+        assert_equal(np.array2string(x),
+                "[('Sarah', [ 8.,  7.]) ('John', [ 6.,  7.])]")
+
+        # for issue #5692
+        A = np.zeros(shape=10, dtype=[("A", "M8[s]")])
+        A[5:].fill(np.datetime64('NaT'))
+        assert_equal(np.array2string(A),
+                "[('1970-01-01T00:00:00',) ('1970-01-01T00:00:00',) " +
+                "('1970-01-01T00:00:00',)\n ('1970-01-01T00:00:00',) " +
+                "('1970-01-01T00:00:00',) ('NaT',) ('NaT',)\n " +
+                "('NaT',) ('NaT',) ('NaT',)]")
+
+        # See #8160
+        struct_int = np.array([([1, -1],), ([123, 1],)], dtype=[('B', 'i4', 2)])
+        assert_equal(np.array2string(struct_int),
+                "[([  1,  -1],) ([123,   1],)]")
+        struct_2dint = np.array([([[0, 1], [2, 3]],), ([[12, 0], [0, 0]],)],
+                dtype=[('B', 'i4', (2, 2))])
+        assert_equal(np.array2string(struct_2dint),
+                "[([[ 0,  1], [ 2,  3]],) ([[12,  0], [ 0,  0]],)]")
+
+        # See #8172
+        array_scalar = np.array(
+                (1., 2.1234567890123456789, 3.), dtype=('f8,f8,f8'))
+        assert_equal(np.array2string(array_scalar), "( 1.,  2.12345679,  3.)")
+
 
 class TestPrintOptions:
     """Test getting and setting global print options."""
@@ -128,6 +203,16 @@ class TestPrintOptions:
         assert_equal(repr(x), "array([ 1.5       ,  0.        ,  1.23456789])")
         np.set_printoptions(precision=4)
         assert_equal(repr(x), "array([ 1.5   ,  0.    ,  1.2346])")
+
+    def test_precision_zero(self):
+        np.set_printoptions(precision=0)
+        for values, string in (
+                ([0.], " 0."), ([.3], " 0."), ([-.3], "-0."), ([.7], " 1."),
+                ([1.5], " 2."), ([-1.5], "-2."), ([-15.34], "-15."),
+                ([100.], " 100."), ([.2, -1, 122.51], "   0.,   -1.,  123."),
+                ([0], "0"), ([-12], "-12"), ([complex(.3, -.7)], " 0.-1.j")):
+            x = np.array(values)
+            assert_equal(repr(x), "array([%s])" % string)
 
     def test_formatter(self):
         x = np.arange(3)
@@ -163,7 +248,7 @@ def test_unicode_object_array():
         expected = "array(['é'], dtype=object)"
     else:
         expected = "array([u'\\xe9'], dtype=object)"
-    x = np.array([sixu('\xe9')], dtype=object)
+    x = np.array([u'\xe9'], dtype=object)
     assert_equal(repr(x), expected)
 
 

@@ -1,3 +1,20 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 # pylint: disable=too-many-arguments, too-many-locals, too-many-instance-attributes
 """`SequentialModule` is a container module that chains a number of modules together."""
 
@@ -154,7 +171,7 @@ class SequentialModule(BaseModule):
         return (arg_params, aux_params)
 
     def init_params(self, initializer=Uniform(0.01), arg_params=None, aux_params=None,
-                    allow_missing=False, force_init=False):
+                    allow_missing=False, force_init=False, allow_extra=False):
         """Initializes parameters.
 
         Parameters
@@ -171,6 +188,10 @@ class SequentialModule(BaseModule):
             In this case, missing values will be filled with `initializer`.
         force_init : bool
             Default ``False``.
+        allow_extra : boolean, optional
+            Whether allow extra parameters that are not needed by symbol.
+            If this is True, no error will be thrown when arg_params or aux_params
+            contain extra parameters that is not needed by the executor.
         """
         if self.params_initialized and not force_init:
             return
@@ -179,7 +200,7 @@ class SequentialModule(BaseModule):
         for module in self._modules:
             module.init_params(initializer=initializer, arg_params=arg_params,
                                aux_params=aux_params, allow_missing=allow_missing,
-                               force_init=force_init)
+                               force_init=force_init, allow_extra=allow_extra)
 
         # make sure we do not have duplicated parameter names
         def _check_name(known_names, new_names, modules, i):

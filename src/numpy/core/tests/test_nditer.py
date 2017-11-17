@@ -5,11 +5,10 @@ import warnings
 
 import numpy as np
 from numpy import array, arange, nditer, all
-from numpy.compat import asbytes, sixu
 from numpy.core.multiarray_tests import test_nditer_too_large
 from numpy.testing import (
     run_module_suite, assert_, assert_equal, assert_array_equal,
-    assert_raises, dec
+    assert_raises, assert_warns, dec, HAS_REFCOUNT, suppress_warnings
     )
 
 
@@ -34,6 +33,7 @@ def iter_iterindices(i):
         i.iternext()
     return ret
 
+@dec.skipif(not HAS_REFCOUNT, "python does not have sys.getrefcount")
 def test_iter_refcount():
     # Make sure the iterator doesn't leak
 
@@ -1000,17 +1000,20 @@ def test_iter_object_arrays_basic():
 
     obj = {'a':3,'b':'d'}
     a = np.array([[1, 2, 3], None, obj, None], dtype='O')
-    rc = sys.getrefcount(obj)
+    if HAS_REFCOUNT:
+        rc = sys.getrefcount(obj)
 
     # Need to allow references for object arrays
     assert_raises(TypeError, nditer, a)
-    assert_equal(sys.getrefcount(obj), rc)
+    if HAS_REFCOUNT:
+        assert_equal(sys.getrefcount(obj), rc)
 
     i = nditer(a, ['refs_ok'], ['readonly'])
     vals = [x_[()] for x_ in i]
     assert_equal(np.array(vals, dtype='O'), a)
     vals, i, x = [None]*3
-    assert_equal(sys.getrefcount(obj), rc)
+    if HAS_REFCOUNT:
+        assert_equal(sys.getrefcount(obj), rc)
 
     i = nditer(a.reshape(2, 2).T, ['refs_ok', 'buffered'],
                         ['readonly'], order='C')
@@ -1018,14 +1021,16 @@ def test_iter_object_arrays_basic():
     vals = [x_[()] for x_ in i]
     assert_equal(np.array(vals, dtype='O'), a.reshape(2, 2).ravel(order='F'))
     vals, i, x = [None]*3
-    assert_equal(sys.getrefcount(obj), rc)
+    if HAS_REFCOUNT:
+        assert_equal(sys.getrefcount(obj), rc)
 
     i = nditer(a.reshape(2, 2).T, ['refs_ok', 'buffered'],
                         ['readwrite'], order='C')
     for x in i:
         x[...] = None
     vals, i, x = [None]*3
-    assert_equal(sys.getrefcount(obj), rc-1)
+    if HAS_REFCOUNT:
+        assert_(sys.getrefcount(obj) == rc-1)
     assert_equal(a, np.array([None]*4, dtype='O'))
 
 def test_iter_object_arrays_conversions():
@@ -1061,10 +1066,12 @@ def test_iter_object_arrays_conversions():
     i = nditer(a, ['refs_ok', 'buffered'], ['readwrite'],
                     casting='unsafe', op_dtypes='O')
     ob = i[0][()]
-    rc = sys.getrefcount(ob)
+    if HAS_REFCOUNT:
+        rc = sys.getrefcount(ob)
     for x in i:
         x[...] += 1
-    assert_equal(sys.getrefcount(ob), rc-1)
+    if HAS_REFCOUNT:
+        assert_(sys.getrefcount(ob) == rc-1)
     assert_equal(a, np.arange(6)+98172489)
 
 def test_iter_common_dtype():
@@ -1130,6 +1137,94 @@ def test_iter_common_dtype():
     assert_equal(i.dtypes[0], np.dtype('c16'))
     assert_equal(i.dtypes[1], np.dtype('c16'))
     assert_equal(i.dtypes[2], np.dtype('c16'))
+
+def test_iter_copy_if_overlap():
+    # Ensure the iterator makes copies on read/write overlap, if requested
+
+    # Copy not needed, 1 op
+    for flag in ['readonly', 'writeonly', 'readwrite']:
+        a = arange(10)
+        i = nditer([a], ['copy_if_overlap'], [[flag]])
+        assert_(i.operands[0] is a)
+
+    # Copy needed, 2 ops, read-write overlap
+    x = arange(10)
+    a = x[1:]
+    b = x[:-1]
+    i = nditer([a, b], ['copy_if_overlap'], [['readonly'], ['readwrite']])
+    assert_(not np.shares_memory(*i.operands))
+
+    # Copy not needed with elementwise, 2 ops, exactly same arrays
+    x = arange(10)
+    a = x
+    b = x
+    i = nditer([a, b], ['copy_if_overlap'], [['readonly', 'overlap_assume_elementwise'],
+                                             ['readwrite', 'overlap_assume_elementwise']])
+    assert_(i.operands[0] is a and i.operands[1] is b)
+    i = nditer([a, b], ['copy_if_overlap'], [['readonly'], ['readwrite']])
+    assert_(i.operands[0] is a and not np.shares_memory(i.operands[1], b))
+
+    # Copy not needed, 2 ops, no overlap
+    x = arange(10)
+    a = x[::2]
+    b = x[1::2]
+    i = nditer([a, b], ['copy_if_overlap'], [['readonly'], ['writeonly']])
+    assert_(i.operands[0] is a and i.operands[1] is b)
+
+    # Copy needed, 2 ops, read-write overlap
+    x = arange(4, dtype=np.int8)
+    a = x[3:]
+    b = x.view(np.int32)[:1]
+    i = nditer([a, b], ['copy_if_overlap'], [['readonly'], ['writeonly']])
+    assert_(not np.shares_memory(*i.operands))
+
+    # Copy needed, 3 ops, read-write overlap
+    for flag in ['writeonly', 'readwrite']:
+        x = np.ones([10, 10])
+        a = x
+        b = x.T
+        c = x
+        i = nditer([a, b, c], ['copy_if_overlap'],
+                   [['readonly'], ['readonly'], [flag]])
+        a2, b2, c2 = i.operands
+        assert_(not np.shares_memory(a2, c2))
+        assert_(not np.shares_memory(b2, c2))
+
+    # Copy not needed, 3 ops, read-only overlap
+    x = np.ones([10, 10])
+    a = x
+    b = x.T
+    c = x
+    i = nditer([a, b, c], ['copy_if_overlap'],
+               [['readonly'], ['readonly'], ['readonly']])
+    a2, b2, c2 = i.operands
+    assert_(a is a2)
+    assert_(b is b2)
+    assert_(c is c2)
+
+    # Copy not needed, 3 ops, read-only overlap
+    x = np.ones([10, 10])
+    a = x
+    b = np.ones([10, 10])
+    c = x.T
+    i = nditer([a, b, c], ['copy_if_overlap'],
+               [['readonly'], ['writeonly'], ['readonly']])
+    a2, b2, c2 = i.operands
+    assert_(a is a2)
+    assert_(b is b2)
+    assert_(c is c2)
+
+    # Copy not needed, 3 ops, write-only overlap
+    x = np.arange(7)
+    a = x[:3]
+    b = x[3:6]
+    c = x[4:7]
+    i = nditer([a, b, c], ['copy_if_overlap'],
+               [['readonly'], ['writeonly'], ['writeonly']])
+    a2, b2, c2 = i.operands
+    assert_(a is a2)
+    assert_(b is b2)
+    assert_(c is c2)
 
 def test_iter_op_axes():
     # Check that custom axes work
@@ -1291,7 +1386,7 @@ def test_iter_allocate_output_itorder():
     assert_equal(i.operands[1].dtype, np.dtype('f4'))
 
 def test_iter_allocate_output_opaxes():
-    # Specifing op_axes should work
+    # Specifying op_axes should work
 
     a = arange(24, dtype='i4').reshape(2, 3, 4)
     i = nditer([None, a], [], [['writeonly', 'allocate'], ['readonly']],
@@ -1616,8 +1711,8 @@ def test_iter_buffered_cast_byteswapped():
 
     assert_equal(a, 2*np.arange(10, dtype='f4'))
 
-    try:
-        warnings.simplefilter("ignore", np.ComplexWarning)
+    with suppress_warnings() as sup:
+        sup.filter(np.ComplexWarning)
 
         a = np.arange(10, dtype='f8').newbyteorder().byteswap()
         i = nditer(a, ['buffered', 'external_loop'],
@@ -1629,8 +1724,6 @@ def test_iter_buffered_cast_byteswapped():
             v[...] *= 2
 
         assert_equal(a, 2*np.arange(10, dtype='f8'))
-    finally:
-        warnings.simplefilter("default", np.ComplexWarning)
 
 def test_iter_buffered_cast_byteswapped_complex():
     # Test that buffering can handle a cast which requires swap->cast->copy
@@ -1704,7 +1797,8 @@ def test_iter_buffered_cast_structured_type():
     a[0] = (0.5, 0.5, [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5]], 0.5)
     a[1] = (1.5, 1.5, [[1.5, 1.5, 1.5], [1.5, 1.5, 1.5]], 1.5)
     a[2] = (2.5, 2.5, [[2.5, 2.5, 2.5], [2.5, 2.5, 2.5]], 2.5)
-    rc = sys.getrefcount(a[0])
+    if HAS_REFCOUNT:
+        rc = sys.getrefcount(a[0])
     i = nditer(a, ['buffered', 'refs_ok'], ['readonly'],
                     casting='unsafe',
                     op_dtypes=sdt)
@@ -1719,7 +1813,8 @@ def test_iter_buffered_cast_structured_type():
     assert_equal(vals[1]['d'], 1.5)
     assert_equal(vals[0].dtype, np.dtype(sdt))
     vals, i, x = [None]*3
-    assert_equal(sys.getrefcount(a[0]), rc)
+    if HAS_REFCOUNT:
+        assert_equal(sys.getrefcount(a[0]), rc)
 
     # struct type -> simple (takes the first value)
     sdt = [('a', 'f4'), ('b', 'i8'), ('d', 'O')]
@@ -1733,9 +1828,11 @@ def test_iter_buffered_cast_structured_type():
     sdt1 = [('a', 'f4'), ('b', 'i8'), ('d', 'O')]
     sdt2 = [('d', 'u2'), ('a', 'O'), ('b', 'f8')]
     a = np.array([(1, 2, 3), (4, 5, 6)], dtype=sdt1)
-    i = nditer(a, ['buffered', 'refs_ok'], ['readonly'],
-                    casting='unsafe',
-                    op_dtypes=sdt2)
+    # New in 1.12: This behavior changes in 1.13, test for dep warning
+    with assert_warns(FutureWarning):
+        i = nditer(a, ['buffered', 'refs_ok'], ['readonly'],
+                        casting='unsafe',
+                        op_dtypes=sdt2)
     assert_equal(i[0].dtype, np.dtype(sdt2))
     assert_equal([np.array(x_) for x_ in i],
                  [np.array((3, 1, 2), dtype=sdt2),
@@ -1745,9 +1842,11 @@ def test_iter_buffered_cast_structured_type():
     sdt1 = [('a', 'f4'), ('b', 'i8'), ('d', 'O')]
     sdt2 = [('b', 'O'), ('a', 'f8')]
     a = np.array([(1, 2, 3), (4, 5, 6)], dtype=sdt1)
-    i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
-                    casting='unsafe',
-                    op_dtypes=sdt2)
+    # New in 1.12: This behavior changes in 1.13, test for dep warning
+    with assert_warns(FutureWarning):
+        i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
+                        casting='unsafe',
+                        op_dtypes=sdt2)
     assert_equal(i[0].dtype, np.dtype(sdt2))
     vals = []
     for x in i:
@@ -1761,9 +1860,11 @@ def test_iter_buffered_cast_structured_type():
     sdt1 = [('a', 'f4'), ('b', 'i8'), ('d', [('a', 'i2'), ('b', 'i4')])]
     sdt2 = [('b', 'O'), ('a', 'f8')]
     a = np.array([(1, 2, (0, 9)), (4, 5, (20, 21))], dtype=sdt1)
-    i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
-                    casting='unsafe',
-                    op_dtypes=sdt2)
+    # New in 1.12: This behavior changes in 1.13, test for dep warning
+    with assert_warns(FutureWarning):
+        i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
+                        casting='unsafe',
+                        op_dtypes=sdt2)
     assert_equal(i[0].dtype, np.dtype(sdt2))
     vals = []
     for x in i:
@@ -1777,9 +1878,11 @@ def test_iter_buffered_cast_structured_type():
     sdt1 = [('a', 'f4'), ('b', 'i8'), ('d', [('a', 'i2'), ('b', 'O')])]
     sdt2 = [('b', 'O'), ('a', 'f8')]
     a = np.array([(1, 2, (0, 9)), (4, 5, (20, 21))], dtype=sdt1)
-    i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
-                    casting='unsafe',
-                    op_dtypes=sdt2)
+    # New in 1.12: This behavior changes in 1.13, test for dep warning
+    with assert_warns(FutureWarning):
+        i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
+                        casting='unsafe',
+                        op_dtypes=sdt2)
     assert_equal(i[0].dtype, np.dtype(sdt2))
     vals = []
     for x in i:
@@ -1793,9 +1896,11 @@ def test_iter_buffered_cast_structured_type():
     sdt1 = [('b', 'O'), ('a', 'f8')]
     sdt2 = [('a', 'f4'), ('b', 'i8'), ('d', [('a', 'i2'), ('b', 'O')])]
     a = np.array([(1, 2), (4, 5)], dtype=sdt1)
-    i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
-                    casting='unsafe',
-                    op_dtypes=sdt2)
+    # New in 1.12: This behavior changes in 1.13, test for dep warning
+    with assert_warns(FutureWarning):
+        i = nditer(a, ['buffered', 'refs_ok'], ['readwrite'],
+                        casting='unsafe',
+                        op_dtypes=sdt2)
     assert_equal(i[0].dtype, np.dtype(sdt2))
     vals = []
     for x in i:
@@ -2012,7 +2117,7 @@ def test_iter_buffering_string():
     assert_raises(TypeError, nditer, a, ['buffered'], ['readonly'],
                   op_dtypes='S2')
     i = nditer(a, ['buffered'], ['readonly'], op_dtypes='S6')
-    assert_equal(i[0], asbytes('abc'))
+    assert_equal(i[0], b'abc')
     assert_equal(i[0].dtype, np.dtype('S6'))
 
     a = np.array(['abc', 'a', 'abcd'], dtype=np.unicode)
@@ -2020,7 +2125,7 @@ def test_iter_buffering_string():
     assert_raises(TypeError, nditer, a, ['buffered'], ['readonly'],
                     op_dtypes='U2')
     i = nditer(a, ['buffered'], ['readonly'], op_dtypes='U6')
-    assert_equal(i[0], sixu('abc'))
+    assert_equal(i[0], u'abc')
     assert_equal(i[0].dtype, np.dtype('U6'))
 
 def test_iter_buffering_growinner():
@@ -2302,7 +2407,11 @@ def test_iter_reduction():
     assert_equal(i[1].strides, (0,))
     # Do the reduction
     for x, y in i:
-        y[...] += x
+        # Use a for loop instead of ``y[...] += x``
+        # (equivalent to ``y[...] = y[...].copy() + x``),
+        # because y has zero strides we use for the reduction
+        for j in range(len(y)):
+            y[j] += x[j]
     # Since no axes were specified, should have allocated a scalar
     assert_equal(i.operands[1].ndim, 0)
     assert_equal(i.operands[1], np.sum(a))
@@ -2353,7 +2462,11 @@ def test_iter_buffering_reduction():
     assert_equal(i[1].strides, (0,))
     # Do the reduction
     for x, y in i:
-        y[...] += x
+        # Use a for loop instead of ``y[...] += x``
+        # (equivalent to ``y[...] = y[...].copy() + x``),
+        # because y has zero strides we use for the reduction
+        for j in range(len(y)):
+            y[j] += x[j]
     assert_equal(b, np.sum(a, axis=1))
 
     # Iterator inner double loop was wrong on this one
@@ -2366,6 +2479,22 @@ def test_iter_buffering_reduction():
     it.operands[1].fill(0)
     it.reset()
     assert_equal(it[0], [1, 2, 1, 2])
+
+    # Iterator inner loop should take argument contiguity into account
+    x = np.ones((7, 13, 8), np.int8)[4:6,1:11:6,1:5].transpose(1, 2, 0)
+    x[...] = np.arange(x.size).reshape(x.shape)
+    y_base = np.arange(4*4, dtype=np.int8).reshape(4, 4)
+    y_base_copy = y_base.copy()
+    y = y_base[::2,:,None]
+
+    it = np.nditer([y, x],
+                   ['buffered', 'external_loop', 'reduce_ok'],
+                   [['readwrite'], ['readonly']])
+    for a, b in it:
+        a.fill(2)
+
+    assert_equal(y_base[1::2], y_base_copy[1::2])
+    assert_equal(y_base[::2], 2)
 
 def test_iter_buffering_reduction_reuse_reduce_loops():
     # There was a bug triggering reuse of the reduce loop inappropriately,

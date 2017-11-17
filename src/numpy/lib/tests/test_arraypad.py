@@ -477,6 +477,19 @@ class TestConstant(TestCase):
             )
         assert_allclose(test, expected)
 
+    def test_check_constant_pad_2d(self):
+        arr = np.arange(4).reshape(2, 2)
+        test = np.lib.pad(arr, ((1, 2), (1, 3)), mode='constant',
+                          constant_values=((1, 2), (3, 4)))
+        expected = np.array(
+            [[3, 1, 1, 4, 4, 4],
+             [3, 0, 1, 4, 4, 4],
+             [3, 2, 3, 4, 4, 4],
+             [3, 2, 2, 4, 4, 4],
+             [3, 2, 2, 4, 4, 4]]
+        )
+        assert_allclose(test, expected)
+
 
 class TestLinearRamp(TestCase):
     def test_check_simple(self):
@@ -625,6 +638,11 @@ class TestReflect(TestCase):
     def test_check_03(self):
         a = pad([1, 2, 3], 4, 'reflect')
         b = np.array([1, 2, 3, 2, 1, 2, 3, 2, 1, 2, 3])
+        assert_array_equal(a, b)
+
+    def test_check_padding_an_empty_array(self):
+        a = pad(np.zeros((0, 3)), ((0,), (1,)), mode='reflect')
+        b = np.zeros((0, 5))
         assert_array_equal(a, b)
 
 
@@ -901,6 +919,24 @@ class TestEdge(TestCase):
             )
         assert_array_equal(a, b)
 
+    def test_check_width_shape_1_2(self):
+        # Check a pad_width of the form ((1, 2),).
+        # Regression test for issue gh-7808.
+        a = np.array([1, 2, 3])
+        padded = pad(a, ((1, 2),), 'edge')
+        expected = np.array([1, 1, 2, 3, 3, 3])
+        assert_array_equal(padded, expected)
+
+        a = np.array([[1, 2, 3], [4, 5, 6]])
+        padded = pad(a, ((1, 2),), 'edge')
+        expected = pad(a, ((1, 2), (1, 2)), 'edge')
+        assert_array_equal(padded, expected)
+
+        a = np.arange(24).reshape(2, 3, 4)
+        padded = pad(a, ((1, 2),), 'edge')
+        expected = pad(a, ((1, 2), (1, 2), (1, 2)), 'edge')
+        assert_array_equal(padded, expected)
+
 
 class TestZeroPadWidth(TestCase):
     def test_zero_pad_width(self):
@@ -953,6 +989,14 @@ class TestNdarrayPadWidth(TestCase):
         assert_array_equal(a, b)
 
 
+class TestUnicodeInput(TestCase):
+    def test_unicode_mode(self):
+        constant_mode = u'constant'
+        a = np.pad([1], 2, mode=constant_mode)
+        b = np.array([0, 0, 1, 0, 0])
+        assert_array_equal(a, b)
+
+
 class ValueError1(TestCase):
     def test_check_simple(self):
         arr = np.arange(30)
@@ -975,6 +1019,12 @@ class ValueError1(TestCase):
         assert_raises(ValueError, pad, arr, ((-2, 3), (3, 2)),
                       **kwargs)
 
+    def test_check_empty_array(self):
+        assert_raises(ValueError, pad, [], 4, mode='reflect')
+        assert_raises(ValueError, pad, np.ndarray(0), 4, mode='reflect')
+        assert_raises(ValueError, pad, np.zeros((0, 3)), ((1,), (0,)),
+                      mode='reflect')
+
 
 class ValueError2(TestCase):
     def test_check_negative_pad_amount(self):
@@ -993,7 +1043,7 @@ class ValueError3(TestCase):
 
     def test_mode_not_set(self):
         arr = np.arange(30).reshape(5, 6)
-        assert_raises(ValueError, pad, arr, 4)
+        assert_raises(TypeError, pad, arr, 4)
 
     def test_malformed_pad_amount(self):
         arr = np.arange(30).reshape(5, 6)

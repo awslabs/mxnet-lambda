@@ -6,7 +6,7 @@ import nose
 
 import numpy as np
 from numpy.testing import (
-    run_module_suite, assert_, assert_equal
+    run_module_suite, assert_, assert_equal, SkipTest
 )
 
 
@@ -186,12 +186,10 @@ def test_scalar_format():
             ('{0:g}', 1.5, np.float16),
             ('{0:g}', 1.5, np.float32),
             ('{0:g}', 1.5, np.float64),
-            ('{0:g}', 1.5, np.longdouble)]
-    # Python 2.6 doesn't implement complex.__format__
-    if sys.version_info[:2] > (2, 6):
-        tests += [('{0:g}', 1.5+0.5j, np.complex64),
-                ('{0:g}', 1.5+0.5j, np.complex128),
-                ('{0:g}', 1.5+0.5j, np.clongdouble)]
+            ('{0:g}', 1.5, np.longdouble),
+            ('{0:g}', 1.5+0.5j, np.complex64),
+            ('{0:g}', 1.5+0.5j, np.complex128),
+            ('{0:g}', 1.5+0.5j, np.clongdouble)]
 
     for (fmat, val, valtype) in tests:
         try:
@@ -207,7 +205,7 @@ def test_scalar_format():
 def in_foreign_locale(func):
     """
     Swap LC_NUMERIC locale to one in which the decimal point is ',' and not '.'
-    If not possible, raise nose.SkipTest
+    If not possible, raise SkipTest
 
     """
     if sys.platform == 'win32':
@@ -225,8 +223,8 @@ def in_foreign_locale(func):
                 except locale.Error:
                     pass
             else:
-                raise nose.SkipTest("Skipping locale test, because "
-                                    "French locale not found")
+                raise SkipTest("Skipping locale test, because "
+                                "French locale not found")
             return func(*args, **kwargs)
         finally:
             locale.setlocale(locale.LC_NUMERIC, locale=curloc)

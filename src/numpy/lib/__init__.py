@@ -8,6 +8,7 @@ from numpy.version import version as __version__
 from .type_check import *
 from .index_tricks import *
 from .function_base import *
+from .mixins import *
 from .nanfunctions import *
 from .shape_base import *
 from .stride_tricks import *
@@ -21,14 +22,16 @@ from .utils import *
 from .arraysetops import *
 from .npyio import *
 from .financial import *
-from .arrayterator import *
+from .arrayterator import Arrayterator
 from .arraypad import *
 from ._version import *
+from numpy.core.multiarray import tracemalloc_domain
 
-__all__ = ['emath', 'math']
+__all__ = ['emath', 'math', 'tracemalloc_domain']
 __all__ += type_check.__all__
 __all__ += index_tricks.__all__
 __all__ += function_base.__all__
+__all__ += mixins.__all__
 __all__ += shape_base.__all__
 __all__ += stride_tricks.__all__
 __all__ += twodim_base.__all__
@@ -41,6 +44,6 @@ __all__ += npyio.__all__
 __all__ += financial.__all__
 __all__ += nanfunctions.__all__
 
-from numpy.testing import Tester
-test = Tester().test
-bench = Tester().bench
+from numpy.testing.nosetester import _numpy_tester
+test = _numpy_tester().test
+bench = _numpy_tester().bench

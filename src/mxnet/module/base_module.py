@@ -1,3 +1,20 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 # pylint: disable=fixme, too-many-arguments, too-many-locals, too-many-public-methods, too-many-branches
 """`BaseModule` defines an API for modules."""
 
@@ -12,23 +29,7 @@ from ..context import cpu
 from ..model import BatchEndParam
 from ..initializer import Uniform
 from ..io import DataDesc
-
-
-def _as_list(obj):
-    """A utility function that treat the argument as a list.
-
-    Parameters
-    ----------
-    obj : object
-
-    Returns
-    -------
-    If `obj` is a list, return it. Otherwise, return `[obj]` as a single-element list.
-    """
-    if isinstance(obj, list):
-        return obj
-    else:
-        return [obj]
+from ..base import _as_list
 
 
 def _check_input_names(symbol, names, typename, throw):
@@ -55,7 +56,7 @@ def _check_input_names(symbol, names, typename, throw):
 def _check_names_match(data_names, data_shapes, name, throw):
     """Check that input names matches input data descriptors."""
     actual = [x[0] for x in data_shapes]
-    if data_names != actual:
+    if sorted(data_names) != sorted(actual):
         msg = "Data provided by %s_shapes don't match names specified by %s_names (%s vs. %s)"%(
             name, name, str(data_shapes), str(data_names))
         if throw:
@@ -590,7 +591,7 @@ class BaseModule(object):
         raise NotImplementedError()
 
     def init_params(self, initializer=Uniform(0.01), arg_params=None, aux_params=None,
-                    allow_missing=False, force_init=False):
+                    allow_missing=False, force_init=False, allow_extra=False):
         """Initializes the parameters and auxiliary states.
 
         Parameters
@@ -608,6 +609,10 @@ class BaseModule(object):
             called to fill those missing params.
         force_init : bool
             If ``True``, `force_init` will force re-initialize even if already initialized.
+        allow_extra : boolean, optional
+            Whether allow extra parameters that are not needed by symbol.
+            If this is True, no error will be thrown when arg_params or aux_params
+            contain extra parameters that is not needed by the executor.
 
         Examples
         --------
@@ -616,7 +621,8 @@ class BaseModule(object):
         """
         raise NotImplementedError()
 
-    def set_params(self, arg_params, aux_params, allow_missing=False, force_init=True):
+    def set_params(self, arg_params, aux_params, allow_missing=False, force_init=True,
+                   allow_extra=False):
         """Assigns parameter and aux state values.
 
         Parameters
@@ -630,6 +636,10 @@ class BaseModule(object):
             called to fill those missing params.
         force_init : bool
             If ``True``, will force re-initialize even if already initialized.
+        allow_extra : boolean, optional
+            Whether allow extra parameters that are not needed by symbol.
+            If this is True, no error will be thrown when arg_params or aux_params
+            contain extra parameters that is not needed by the executor.
 
         Examples
         --------
@@ -638,7 +648,8 @@ class BaseModule(object):
         >>> mod.set_params(arg_params=arg_params, aux_params=aux_params)
         """
         self.init_params(initializer=None, arg_params=arg_params, aux_params=aux_params,
-                         allow_missing=allow_missing, force_init=force_init)
+                         allow_missing=allow_missing, force_init=force_init,
+                         allow_extra=allow_extra)
 
     def save_params(self, fname):
         """Saves model parameters to file.
@@ -741,7 +752,11 @@ class BaseModule(object):
         pass
 
     def forward(self, data_batch, is_train=None):
-        """Forward computation.
+        """Forward computation. It supports data batches with different shapes, such as
+        different batch sizes or different image sizes.
+        If reshaping of data batch relates to modification of symbol or module, such as
+        changing image layout ordering or switching from training to predicting, module
+        rebinding is required.
 
         Parameters
         ----------
@@ -752,16 +767,25 @@ class BaseModule(object):
 
         Examples
         --------
-        >>> # An example of forward computation.
+        >>> import mxnet as mx
         >>> from collections import namedtuple
         >>> Batch = namedtuple('Batch', ['data'])
-        >>> mod.bind(data_shapes=[('data', (1, 10, 10))])
+        >>> data = mx.sym.Variable('data')
+        >>> out = data * 2
+        >>> mod = mx.mod.Module(symbol=out, label_names=None)
+        >>> mod.bind(data_shapes=[('data', (1, 10))])
         >>> mod.init_params()
-        >>> data1 = [mx.nd.ones([1, 10, 10])]
+        >>> data1 = [mx.nd.ones((1, 10))]
         >>> mod.forward(Batch(data1))
         >>> print mod.get_outputs()[0].asnumpy()
-        [[ 0.09999977  0.10000153  0.10000716  0.10000195  0.09999853  0.09999743
-           0.10000272  0.10000113  0.09999088  0.09999888]]
+        [[ 2.  2.  2.  2.  2.  2.  2.  2.  2.  2.]]
+        >>> # Forward with data batch of different shape
+        >>> data2 = [mx.nd.ones((3, 5))]
+        >>> mod.forward(Batch(data2))
+        >>> print mod.get_outputs()[0].asnumpy()
+        [[ 2.  2.  2.  2.  2.]
+         [ 2.  2.  2.  2.  2.]
+         [ 2.  2.  2.  2.  2.]]
         """
         raise NotImplementedError()
 
@@ -933,7 +957,8 @@ class BaseModule(object):
 
     def init_optimizer(self, kvstore='local', optimizer='sgd',
                        optimizer_params=(('learning_rate', 0.01),), force_init=False):
-        """Installs and initializes optimizers.
+        """Installs and initializes optimizers, as well as initialize kvstore for
+           distributed training
 
         Parameters
         ----------

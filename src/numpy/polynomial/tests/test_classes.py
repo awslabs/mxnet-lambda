@@ -53,6 +53,7 @@ def test_class_methods():
         yield check_cutdeg, Poly
         yield check_truncate, Poly
         yield check_trim, Poly
+        yield check_ufunc_override, Poly
 
 
 #
@@ -173,9 +174,16 @@ def check_fit(Poly):
     assert_almost_equal(p(x), y)
     assert_almost_equal(p.domain, d)
     assert_almost_equal(p.window, w)
+    p = Poly.fit(x, y, [0, 1, 2, 3], domain=d, window=w)
+    assert_almost_equal(p(x), y)
+    assert_almost_equal(p.domain, d)
+    assert_almost_equal(p.window, w)
 
     # check with class domain default
     p = Poly.fit(x, y, 3, [])
+    assert_equal(p.domain, Poly.domain)
+    assert_equal(p.window, Poly.window)
+    p = Poly.fit(x, y, [0, 1, 2, 3], [])
     assert_equal(p.domain, Poly.domain)
     assert_equal(p.window, Poly.window)
 
@@ -185,7 +193,9 @@ def check_fit(Poly):
     w[::2] = 1
     p1 = Poly.fit(x[::2], z[::2], 3)
     p2 = Poly.fit(x, z, 3, w=w)
+    p3 = Poly.fit(x, z, [0, 1, 2, 3], w=w)
     assert_almost_equal(p1(x), p2(x))
+    assert_almost_equal(p2(x), p3(x))
 
 
 def check_equal(Poly):
@@ -564,6 +574,13 @@ def check_mapparms(Poly):
     w = 2*d + 1
     p = Poly([1], domain=d, window=w)
     assert_almost_equal([1, 2], p.mapparms())
+
+
+def check_ufunc_override(Poly):
+    p = Poly([1, 2, 3])
+    x = np.ones(3)
+    assert_raises(TypeError, np.add, p, x)
+    assert_raises(TypeError, np.add, x, p)
 
 
 if __name__ == "__main__":

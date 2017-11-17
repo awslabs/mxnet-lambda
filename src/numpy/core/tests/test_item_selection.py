@@ -5,7 +5,7 @@ import sys
 import numpy as np
 from numpy.testing import (
     TestCase, run_module_suite, assert_, assert_raises,
-    assert_array_equal
+    assert_array_equal, HAS_REFCOUNT
 )
 
 
@@ -18,10 +18,9 @@ class TestTake(TestCase):
         index_arrays = [np.empty(0, dtype=np.intp),
                         np.empty(tuple(), dtype=np.intp),
                         np.empty((1, 1), dtype=np.intp)]
-        real_indices = {}
-        real_indices['raise'] = {-1:1, 4:IndexError}
-        real_indices['wrap'] = {-1:1, 4:0}
-        real_indices['clip'] = {-1:0, 4:1}
+        real_indices = {'raise': {-1: 1, 4: IndexError},
+                        'wrap': {-1: 1, 4: 0},
+                        'clip': {-1: 0, 4: 1}}
         # Currently all types but object, use the same function generation.
         # So it should not be necessary to test all. However test also a non
         # refcounted struct on top of object.
@@ -56,12 +55,14 @@ class TestTake(TestCase):
             b = np.array([2, 2, 4, 5, 3, 5])
             a.take(b, out=a[:6])
             del a
-            assert_(all(sys.getrefcount(o) == 3 for o in objects))
+            if HAS_REFCOUNT:
+                assert_(all(sys.getrefcount(o) == 3 for o in objects))
             # not contiguous, example:
             a = np.array(objects * 2)[::2]
             a.take(b, out=a[:6])
             del a
-            assert_(all(sys.getrefcount(o) == 3 for o in objects))
+            if HAS_REFCOUNT:
+                assert_(all(sys.getrefcount(o) == 3 for o in objects))
 
     def test_unicode_mode(self):
         d = np.arange(10)
