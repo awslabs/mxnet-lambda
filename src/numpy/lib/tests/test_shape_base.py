@@ -1,9 +1,11 @@
 from __future__ import division, absolute_import, print_function
 
 import numpy as np
+import warnings
+
 from numpy.lib.shape_base import (
     apply_along_axis, apply_over_axes, array_split, split, hsplit, dsplit,
-    vsplit, dstack, kron, tile
+    vsplit, dstack, column_stack, kron, tile, expand_dims,
     )
 from numpy.testing import (
     run_module_suite, TestCase, assert_, assert_equal, assert_array_equal,
@@ -27,12 +29,178 @@ class TestApplyAlongAxis(TestCase):
         assert_array_equal(apply_along_axis(np.sum, 0, a),
                            [[27, 30, 33], [36, 39, 42], [45, 48, 51]])
 
+    def test_preserve_subclass(self):
+        # this test is particularly malicious because matrix
+        # refuses to become 1d
+        def double(row):
+            return row * 2
+        m = np.matrix([[0, 1], [2, 3]])
+        expected = np.matrix([[0, 2], [4, 6]])
+
+        result = apply_along_axis(double, 0, m)
+        assert_(isinstance(result, np.matrix))
+        assert_array_equal(result, expected)
+
+        result = apply_along_axis(double, 1, m)
+        assert_(isinstance(result, np.matrix))
+        assert_array_equal(result, expected)
+
+    def test_subclass(self):
+        class MinimalSubclass(np.ndarray):
+            data = 1
+
+        def minimal_function(array):
+            return array.data
+
+        a = np.zeros((6, 3)).view(MinimalSubclass)
+
+        assert_array_equal(
+            apply_along_axis(minimal_function, 0, a), np.array([1, 1, 1])
+        )
+
+    def test_scalar_array(self, cls=np.ndarray):
+        a = np.ones((6, 3)).view(cls)
+        res = apply_along_axis(np.sum, 0, a)
+        assert_(isinstance(res, cls))
+        assert_array_equal(res, np.array([6, 6, 6]).view(cls))
+
+    def test_0d_array(self, cls=np.ndarray):
+        def sum_to_0d(x):
+            """ Sum x, returning a 0d array of the same class """
+            assert_equal(x.ndim, 1)
+            return np.squeeze(np.sum(x, keepdims=True))
+        a = np.ones((6, 3)).view(cls)
+        res = apply_along_axis(sum_to_0d, 0, a)
+        assert_(isinstance(res, cls))
+        assert_array_equal(res, np.array([6, 6, 6]).view(cls))
+
+        res = apply_along_axis(sum_to_0d, 1, a)
+        assert_(isinstance(res, cls))
+        assert_array_equal(res, np.array([3, 3, 3, 3, 3, 3]).view(cls))
+
+    def test_axis_insertion(self, cls=np.ndarray):
+        def f1to2(x):
+            """produces an assymmetric non-square matrix from x"""
+            assert_equal(x.ndim, 1)
+            return (x[::-1] * x[1:,None]).view(cls)
+
+        a2d = np.arange(6*3).reshape((6, 3))
+
+        # 2d insertion along first axis
+        actual = apply_along_axis(f1to2, 0, a2d)
+        expected = np.stack([
+            f1to2(a2d[:,i]) for i in range(a2d.shape[1])
+        ], axis=-1).view(cls)
+        assert_equal(type(actual), type(expected))
+        assert_equal(actual, expected)
+
+        # 2d insertion along last axis
+        actual = apply_along_axis(f1to2, 1, a2d)
+        expected = np.stack([
+            f1to2(a2d[i,:]) for i in range(a2d.shape[0])
+        ], axis=0).view(cls)
+        assert_equal(type(actual), type(expected))
+        assert_equal(actual, expected)
+
+        # 3d insertion along middle axis
+        a3d = np.arange(6*5*3).reshape((6, 5, 3))
+
+        actual = apply_along_axis(f1to2, 1, a3d)
+        expected = np.stack([
+            np.stack([
+                f1to2(a3d[i,:,j]) for i in range(a3d.shape[0])
+            ], axis=0)
+            for j in range(a3d.shape[2])
+        ], axis=-1).view(cls)
+        assert_equal(type(actual), type(expected))
+        assert_equal(actual, expected)
+
+    def test_subclass_preservation(self):
+        class MinimalSubclass(np.ndarray):
+            pass
+        self.test_scalar_array(MinimalSubclass)
+        self.test_0d_array(MinimalSubclass)
+        self.test_axis_insertion(MinimalSubclass)
+
+    def test_axis_insertion_ma(self):
+        def f1to2(x):
+            """produces an assymmetric non-square matrix from x"""
+            assert_equal(x.ndim, 1)
+            res = x[::-1] * x[1:,None]
+            return np.ma.masked_where(res%5==0, res)
+        a = np.arange(6*3).reshape((6, 3))
+        res = apply_along_axis(f1to2, 0, a)
+        assert_(isinstance(res, np.ma.masked_array))
+        assert_equal(res.ndim, 3)
+        assert_array_equal(res[:,:,0].mask, f1to2(a[:,0]).mask)
+        assert_array_equal(res[:,:,1].mask, f1to2(a[:,1]).mask)
+        assert_array_equal(res[:,:,2].mask, f1to2(a[:,2]).mask)
+
+    def test_tuple_func1d(self):
+        def sample_1d(x):
+            return x[1], x[0]
+        res = np.apply_along_axis(sample_1d, 1, np.array([[1, 2], [3, 4]]))
+        assert_array_equal(res, np.array([[2, 1], [4, 3]]))
+
+    def test_empty(self):
+        # can't apply_along_axis when there's no chance to call the function
+        def never_call(x):
+            assert_(False) # should never be reached
+
+        a = np.empty((0, 0))
+        assert_raises(ValueError, np.apply_along_axis, never_call, 0, a)
+        assert_raises(ValueError, np.apply_along_axis, never_call, 1, a)
+
+        # but it's sometimes ok with some non-zero dimensions
+        def empty_to_1(x):
+            assert_(len(x) == 0)
+            return 1
+
+        a = np.empty((10, 0))
+        actual = np.apply_along_axis(empty_to_1, 1, a)
+        assert_equal(actual, np.ones(10))
+        assert_raises(ValueError, np.apply_along_axis, empty_to_1, 0, a)
+
+    def test_with_iterable_object(self):
+        # from issue 5248
+        d = np.array([
+            [set([1, 11]), set([2, 22]), set([3, 33])],
+            [set([4, 44]), set([5, 55]), set([6, 66])]
+        ])
+        actual = np.apply_along_axis(lambda a: set.union(*a), 0, d)
+        expected = np.array([{1, 11, 4, 44}, {2, 22, 5, 55}, {3, 33, 6, 66}])
+
+        assert_equal(actual, expected)
+
+        # issue 8642 - assert_equal doesn't detect this!
+        for i in np.ndindex(actual.shape):
+            assert_equal(type(actual[i]), type(expected[i]))
+
 
 class TestApplyOverAxes(TestCase):
     def test_simple(self):
         a = np.arange(24).reshape(2, 3, 4)
         aoa_a = apply_over_axes(np.sum, a, [0, 2])
         assert_array_equal(aoa_a, np.array([[[60], [92], [124]]]))
+
+
+class TestExpandDims(TestCase):
+    def test_functionality(self):
+        s = (2, 3, 4, 5)
+        a = np.empty(s)
+        for axis in range(-5, 4):
+            b = expand_dims(a, axis)
+            assert_(b.shape[axis] == 1)
+            assert_(np.squeeze(b).shape == s)
+
+    def test_deprecations(self):
+        # 2017-05-17, 1.13.0
+        s = (2, 3, 4, 5)
+        a = np.empty(s)
+        with warnings.catch_warnings():
+            warnings.simplefilter("always")
+            assert_warns(DeprecationWarning, expand_dims, a, -6)
+            assert_warns(DeprecationWarning, expand_dims, a, 5)
 
 
 class TestArraySplit(TestCase):
@@ -103,12 +271,17 @@ class TestArraySplit(TestCase):
 
     def test_integer_split_2D_rows(self):
         a = np.array([np.arange(10), np.arange(10)])
-        res = assert_warns(FutureWarning, array_split, a, 3, axis=0)
+        res = array_split(a, 3, axis=0)
+        tgt = [np.array([np.arange(10)]), np.array([np.arange(10)]),
+                   np.zeros((0, 10))]
+        compare_results(res, tgt)
+        assert_(a.dtype.type is res[-1].dtype.type)
 
-        # After removing the FutureWarning, the last should be zeros((0, 10))
-        desired = [np.array([np.arange(10)]), np.array([np.arange(10)]),
-                   np.array([])]
-        compare_results(res, desired)
+        # Same thing for manual splits:
+        res = array_split(a, [0, 1, 2], axis=0)
+        tgt = [np.zeros((0, 10)), np.array([np.arange(10)]),
+               np.array([np.arange(10)])]
+        compare_results(res, tgt)
         assert_(a.dtype.type is res[-1].dtype.type)
 
     def test_integer_split_2D_cols(self):
@@ -123,12 +296,10 @@ class TestArraySplit(TestCase):
         """ This will fail if we change default axis
         """
         a = np.array([np.arange(10), np.arange(10)])
-        res = assert_warns(FutureWarning, array_split, a, 3)
-
-        # After removing the FutureWarning, the last should be zeros((0, 10))
-        desired = [np.array([np.arange(10)]), np.array([np.arange(10)]),
-                   np.array([])]
-        compare_results(res, desired)
+        res = array_split(a, 3)
+        tgt = [np.array([np.arange(10)]), np.array([np.arange(10)]),
+                   np.zeros((0, 10))]
+        compare_results(res, tgt)
         assert_(a.dtype.type is res[-1].dtype.type)
         # perhaps should check higher dimensions
 
@@ -172,8 +343,15 @@ class TestSplit(TestCase):
         a = np.arange(10)
         assert_raises(ValueError, split, a, 3)
 
+class TestColumnStack(TestCase):
+    def test_non_iterable(self):
+        assert_raises(TypeError, column_stack, 1)
+
 
 class TestDstack(TestCase):
+    def test_non_iterable(self):
+        assert_raises(TypeError, dstack, 1)
+
     def test_0D_array(self):
         a = np.array(1)
         b = np.array(2)
@@ -209,6 +387,9 @@ class TestHsplit(TestCase):
     """Only testing for integer splits.
 
     """
+    def test_non_iterable(self):
+        assert_raises(ValueError, hsplit, 1, 1)
+
     def test_0D_array(self):
         a = np.array(1)
         try:
@@ -235,6 +416,13 @@ class TestVsplit(TestCase):
     """Only testing for integer splits.
 
     """
+    def test_non_iterable(self):
+        assert_raises(ValueError, vsplit, 1, 1)
+
+    def test_0D_array(self):
+        a = np.array(1)
+        assert_raises(ValueError, vsplit, a, 2)
+
     def test_1D_array(self):
         a = np.array([1, 2, 3, 4])
         try:
@@ -253,6 +441,16 @@ class TestVsplit(TestCase):
 
 class TestDsplit(TestCase):
     # Only testing for integer splits.
+    def test_non_iterable(self):
+        assert_raises(ValueError, dsplit, 1, 1)
+
+    def test_0D_array(self):
+        a = np.array(1)
+        assert_raises(ValueError, dsplit, a, 2)
+
+    def test_1D_array(self):
+        a = np.array([1, 2, 3, 4])
+        assert_raises(ValueError, dsplit, a, 2)
 
     def test_2D_array(self):
         a = np.array([[1, 2, 3, 4],

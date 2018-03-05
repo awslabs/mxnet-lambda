@@ -256,11 +256,36 @@ class TestRecord(TestCase):
         dt2 = np.dtype((np.void, dt.fields))
         assert_equal(dt2.fields, dt.fields)
 
+    def test_from_dict_with_zero_width_field(self):
+        # Regression test for #6430 / #2196
+        dt = np.dtype([('val1', np.float32, (0,)), ('val2', int)])
+        dt2 = np.dtype({'names': ['val1', 'val2'],
+                        'formats': [(np.float32, (0,)), int]})
+
+        assert_dtype_equal(dt, dt2)
+        assert_equal(dt.fields['val1'][0].itemsize, 0)
+        assert_equal(dt.itemsize, dt.fields['val2'][0].itemsize)
+
     def test_bool_commastring(self):
         d = np.dtype('?,?,?')  # raises?
         assert_equal(len(d.names), 3)
         for n in d.names:
             assert_equal(d.fields[n][0], np.dtype('?'))
+
+    def test_nonint_offsets(self):
+        # gh-8059
+        def make_dtype(off):
+            return np.dtype({'names': ['A'], 'formats': ['i4'], 
+                             'offsets': [off]})
+        
+        assert_raises(TypeError, make_dtype, 'ASD')
+        assert_raises(OverflowError, make_dtype, 2**70)
+        assert_raises(TypeError, make_dtype, 2.3)
+        assert_raises(ValueError, make_dtype, -10)
+
+        # no errors here:
+        dt = make_dtype(np.uint32(0))
+        np.zeros(1, dtype=dt)[0].item()
 
 
 class TestSubarray(TestCase):
@@ -350,6 +375,23 @@ class TestSubarray(TestCase):
         dt = np.dtype([('a', 'f4', (IntLike(),))])
         assert_(isinstance(dt['a'].shape, tuple))
         assert_(isinstance(dt['a'].shape[0], int))
+
+    def test_shape_matches_ndim(self):
+        dt = np.dtype([('a', 'f4', ())])
+        assert_equal(dt['a'].shape, ())
+        assert_equal(dt['a'].ndim, 0)
+
+        dt = np.dtype([('a', 'f4')])
+        assert_equal(dt['a'].shape, ())
+        assert_equal(dt['a'].ndim, 0)
+
+        dt = np.dtype([('a', 'f4', 4)])
+        assert_equal(dt['a'].shape, (4,))
+        assert_equal(dt['a'].ndim, 1)
+
+        dt = np.dtype([('a', 'f4', (1, 2, 3))])
+        assert_equal(dt['a'].shape, (1, 2, 3))
+        assert_equal(dt['a'].ndim, 3)
 
     def test_shape_invalid(self):
         # Check that the shape is valid.
@@ -539,7 +581,7 @@ class TestString(TestCase):
         # Pull request #4722
         np.array(["", ""]).astype(object)
 
-class TestDtypeAttributeDeletion(object):
+class TestDtypeAttributeDeletion(TestCase):
 
     def test_dtype_non_writable_attributes_deletion(self):
         dt = np.dtype(np.double)
@@ -556,7 +598,17 @@ class TestDtypeAttributeDeletion(object):
         for s in attr:
             assert_raises(AttributeError, delattr, dt, s)
 
+
 class TestDtypeAttributes(TestCase):
+    def test_descr_has_trailing_void(self):
+        # see gh-6359
+        dtype = np.dtype({
+            'names': ['A', 'B'],
+            'formats': ['f4', 'f4'],
+            'offsets': [0, 8],
+            'itemsize': 16})
+        new_dtype = np.dtype(dtype.descr)
+        assert_equal(new_dtype.itemsize, 16)
 
     def test_name_builtin(self):
         for t in np.typeDict.values():
@@ -576,6 +628,17 @@ def test_rational_dtype():
     # test for bug gh-5719
     a = np.array([1111], dtype=rational).astype
     assert_raises(OverflowError, a, 'int8')
+
+    # test that dtype detection finds user-defined types
+    x = rational(1)
+    assert_equal(np.array([x,x]).dtype, np.dtype(rational))
+
+
+def test_dtypes_are_true():
+    # test for gh-6294
+    assert bool(np.dtype('f8'))
+    assert bool(np.dtype('i8'))
+    assert bool(np.dtype([('a', 'i8'), ('b', 'f4')]))
 
 
 if __name__ == "__main__":

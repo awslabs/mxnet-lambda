@@ -6,251 +6,89 @@ typedef struct {
         npy_bool obval;
 } PyBoolScalarObject;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
 extern NPY_NO_EXPORT PyTypeObject PyArrayMapIter_Type;
 extern NPY_NO_EXPORT PyTypeObject PyArrayNeighborhoodIter_Type;
 extern NPY_NO_EXPORT PyBoolScalarObject _PyArrayScalar_BoolValues[2];
-#else
-NPY_NO_EXPORT PyTypeObject PyArrayMapIter_Type;
-NPY_NO_EXPORT PyTypeObject PyArrayNeighborhoodIter_Type;
-NPY_NO_EXPORT PyBoolScalarObject _PyArrayScalar_BoolValues[2];
-#endif
 
 NPY_NO_EXPORT  unsigned int PyArray_GetNDArrayCVersion \
        (void);
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyBigArray_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyBigArray_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyBigArray_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyArray_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyArray_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyArray_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyArrayDescr_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyArrayDescr_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyArrayDescr_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyArrayFlags_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyArrayFlags_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyArrayFlags_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyArrayIter_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyArrayIter_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyArrayIter_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyArrayMultiIter_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyArrayMultiIter_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyArrayMultiIter_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT int NPY_NUMUSERTYPES;
-#else
-    NPY_NO_EXPORT int NPY_NUMUSERTYPES;
-#endif
+extern NPY_NO_EXPORT int NPY_NUMUSERTYPES;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyBoolArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyBoolArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyBoolArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
 extern NPY_NO_EXPORT PyBoolScalarObject _PyArrayScalar_BoolValues[2];
-#else
-NPY_NO_EXPORT PyBoolScalarObject _PyArrayScalar_BoolValues[2];
-#endif
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyGenericArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyGenericArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyGenericArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyNumberArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyNumberArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyNumberArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyIntegerArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyIntegerArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyIntegerArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PySignedIntegerArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PySignedIntegerArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PySignedIntegerArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyUnsignedIntegerArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyUnsignedIntegerArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyUnsignedIntegerArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyInexactArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyInexactArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyInexactArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyFloatingArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyFloatingArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyFloatingArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyComplexFloatingArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyComplexFloatingArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyComplexFloatingArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyFlexibleArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyFlexibleArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyFlexibleArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyCharacterArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyCharacterArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyCharacterArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyByteArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyByteArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyByteArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyShortArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyShortArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyShortArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyIntArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyIntArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyIntArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyLongArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyLongArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyLongArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyLongLongArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyLongLongArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyLongLongArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyUByteArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyUByteArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyUByteArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyUShortArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyUShortArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyUShortArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyUIntArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyUIntArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyUIntArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyULongArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyULongArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyULongArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyULongLongArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyULongLongArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyULongLongArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyFloatArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyFloatArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyFloatArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyDoubleArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyDoubleArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyDoubleArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyLongDoubleArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyLongDoubleArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyLongDoubleArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyCFloatArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyCFloatArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyCFloatArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyCDoubleArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyCDoubleArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyCDoubleArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyCLongDoubleArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyCLongDoubleArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyCLongDoubleArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyObjectArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyObjectArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyObjectArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyStringArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyStringArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyStringArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyUnicodeArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyUnicodeArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyUnicodeArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyVoidArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyVoidArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyVoidArrType_Type;
 
 NPY_NO_EXPORT  int PyArray_SetNumericOps \
        (PyObject *);
@@ -600,35 +438,15 @@ NPY_NO_EXPORT  PyObject * PyArray_Correlate2 \
        (PyObject *, PyObject *, int);
 NPY_NO_EXPORT  PyObject* PyArray_NeighborhoodIterNew \
        (PyArrayIterObject *, npy_intp *, int, PyArrayObject*);
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyTimeIntegerArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyTimeIntegerArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyTimeIntegerArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyDatetimeArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyDatetimeArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyDatetimeArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyTimedeltaArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyTimedeltaArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyTimedeltaArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyHalfArrType_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyHalfArrType_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyHalfArrType_Type;
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject NpyIter_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject NpyIter_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject NpyIter_Type;
 
 NPY_NO_EXPORT  void PyArray_SetDatetimeParseFunction \
        (PyObject *);
@@ -776,11 +594,7 @@ NPY_NO_EXPORT  void * PyDataMem_RENEW \
        (void *, size_t);
 NPY_NO_EXPORT  PyDataMem_EventHookFunc * PyDataMem_SetEventHook \
        (PyDataMem_EventHookFunc *, void *, void **);
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT NPY_CASTING NPY_DEFAULT_ASSIGN_CASTING;
-#else
-    NPY_NO_EXPORT NPY_CASTING NPY_DEFAULT_ASSIGN_CASTING;
-#endif
+extern NPY_NO_EXPORT NPY_CASTING NPY_DEFAULT_ASSIGN_CASTING;
 
 NPY_NO_EXPORT  void PyArray_MapIterSwapAxes \
        (PyArrayMapIterObject *, PyArrayObject **, int);
@@ -798,6 +612,8 @@ NPY_NO_EXPORT  void * PyDataMem_NEW_ZEROED \
        (size_t, size_t);
 NPY_NO_EXPORT NPY_GCC_NONNULL(1) int PyArray_CheckAnyScalarExact \
        (PyObject *);
+NPY_NO_EXPORT  PyObject * PyArray_MapIterArrayCopyIfOverlap \
+       (PyArrayObject *, PyObject *, int, PyArrayObject *);
 
 #else
 
@@ -1628,6 +1444,9 @@ static void **PyArray_API=NULL;
 #define PyArray_CheckAnyScalarExact \
         (*(int (*)(PyObject *)) \
          PyArray_API[300])
+#define PyArray_MapIterArrayCopyIfOverlap \
+        (*(PyObject * (*)(PyArrayObject *, PyObject *, int, PyArrayObject *)) \
+         PyArray_API[301])
 
 #if !defined(NO_IMPORT_ARRAY) && !defined(NO_IMPORT)
 static int
@@ -1672,13 +1491,13 @@ _import_array(void)
   /* Perform runtime check of C API version */
   if (NPY_VERSION != PyArray_GetNDArrayCVersion()) {
       PyErr_Format(PyExc_RuntimeError, "module compiled against "\
-             "ABI version %x but this version of numpy is %x", \
+             "ABI version 0x%x but this version of numpy is 0x%x", \
              (int) NPY_VERSION, (int) PyArray_GetNDArrayCVersion());
       return -1;
   }
   if (NPY_FEATURE_VERSION > PyArray_GetNDArrayCFeatureVersion()) {
       PyErr_Format(PyExc_RuntimeError, "module compiled against "\
-             "API version %x but this version of numpy is %x", \
+             "API version 0x%x but this version of numpy is 0x%x", \
              (int) NPY_FEATURE_VERSION, (int) PyArray_GetNDArrayCFeatureVersion());
       return -1;
   }

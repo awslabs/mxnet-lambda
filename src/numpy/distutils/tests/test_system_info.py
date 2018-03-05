@@ -3,6 +3,8 @@ from __future__ import division, print_function
 import os
 import shutil
 from tempfile import mkstemp, mkdtemp
+from subprocess import Popen, PIPE
+from distutils.errors import DistutilsError
 
 from numpy.distutils import ccompiler
 from numpy.testing import TestCase, run_module_suite, assert_, assert_equal
@@ -54,6 +56,32 @@ void bar(void) {
 }
 """
 
+def have_compiler():
+    """ Return True if there appears to be an executable compiler
+    """
+    compiler = ccompiler.new_compiler()
+    compiler.customize(None)
+    try:
+        cmd = compiler.compiler  # Unix compilers
+    except AttributeError:
+        try:
+            if not compiler.initialized:
+                compiler.initialize()  # MSVC is different
+        except DistutilsError:
+            return False
+        cmd = [compiler.cc]
+    try:
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        p.stdout.close()
+        p.stderr.close()
+        p.wait()
+    except OSError:
+        return False
+    return True
+
+
+HAVE_COMPILER = have_compiler()
+
 
 class test_system_info(system_info):
 
@@ -64,15 +92,14 @@ class test_system_info(system_info):
                  ):
         self.__class__.info = {}
         self.local_prefixes = []
-        defaults = {}
-        defaults['library_dirs'] = ''
-        defaults['include_dirs'] = ''
-        defaults['runtime_library_dirs'] = ''
-        defaults['rpath'] = ''
-        defaults['src_dirs'] = ''
-        defaults['search_static_first'] = "0"
-        defaults['extra_compile_args'] = ''
-        defaults['extra_link_args'] = ''
+        defaults = {'library_dirs': '',
+                    'include_dirs': '',
+                    'runtime_library_dirs': '',
+                    'rpath': '',
+                    'src_dirs': '',
+                    'search_static_first': "0",
+                    'extra_compile_args': '',
+                    'extra_link_args': ''}
         self.cp = ConfigParser(defaults)
         # We have to parse the config files afterwards
         # to have a consistent temporary filepath
@@ -172,38 +199,41 @@ class TestSystemInfoReading(TestCase):
         extra = tsi.calc_extra_info()
         assert_equal(extra['extra_link_args'], ['-Wl,-rpath=' + self._lib2])
 
+    @skipif(not HAVE_COMPILER)
     def test_compile1(self):
         # Compile source and link the first source
         c = ccompiler.new_compiler()
+        c.customize(None)
+        previousDir = os.getcwd()
         try:
             # Change directory to not screw up directories
-            previousDir = os.getcwd()
             os.chdir(self._dir1)
             c.compile([os.path.basename(self._src1)], output_dir=self._dir1)
             # Ensure that the object exists
             assert_(os.path.isfile(self._src1.replace('.c', '.o')) or
                     os.path.isfile(self._src1.replace('.c', '.obj')))
+        finally:
             os.chdir(previousDir)
-        except OSError:
-            pass
 
+    @skipif(not HAVE_COMPILER)
     @skipif('msvc' in repr(ccompiler.new_compiler()))
     def test_compile2(self):
         # Compile source and link the second source
         tsi = self.c_temp2
         c = ccompiler.new_compiler()
+        c.customize(None)
         extra_link_args = tsi.calc_extra_info()['extra_link_args']
+        previousDir = os.getcwd()
         try:
             # Change directory to not screw up directories
-            previousDir = os.getcwd()
             os.chdir(self._dir2)
             c.compile([os.path.basename(self._src2)], output_dir=self._dir2,
                       extra_postargs=extra_link_args)
             # Ensure that the object exists
             assert_(os.path.isfile(self._src2.replace('.c', '.o')))
+        finally:
             os.chdir(previousDir)
-        except OSError:
-            pass
+
 
 if __name__ == '__main__':
     run_module_suite()

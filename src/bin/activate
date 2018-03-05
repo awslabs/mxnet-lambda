@@ -39,7 +39,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="/home/ec2-user/workspace/mxnet-lambda/src/"
+VIRTUAL_ENV="/home/ec2-user/mx-lambda-nocv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"

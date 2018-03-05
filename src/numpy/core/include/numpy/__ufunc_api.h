@@ -1,17 +1,9 @@
 
 #ifdef _UMATHMODULE
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
 extern NPY_NO_EXPORT PyTypeObject PyUFunc_Type;
-#else
-NPY_NO_EXPORT PyTypeObject PyUFunc_Type;
-#endif
 
-#ifdef NPY_ENABLE_SEPARATE_COMPILATION
-    extern NPY_NO_EXPORT PyTypeObject PyUFunc_Type;
-#else
-    NPY_NO_EXPORT PyTypeObject PyUFunc_Type;
-#endif
+extern NPY_NO_EXPORT PyTypeObject PyUFunc_Type;
 
 NPY_NO_EXPORT  PyObject * PyUFunc_FromFuncAndData \
        (PyUFuncGenericFunction *, void **, char *, int, int, int, int, const char *, const char *, int);

@@ -53,6 +53,14 @@ static NPY_INLINE int PyInt_Check(PyObject *op) {
  */
 #endif /* NPY_PY3K */
 
+/* Py3 changes PySlice_GetIndicesEx' first argument's type to PyObject* */
+#ifdef NPY_PY3K
+#  define NpySlice_GetIndicesEx PySlice_GetIndicesEx
+#else
+#  define NpySlice_GetIndicesEx(op, nop, start, end, step, slicelength) \
+    PySlice_GetIndicesEx((PySliceObject *)op, nop, start, end, step, slicelength)
+#endif
+
 /*
  * PyString -> PyBytes
  */
@@ -140,17 +148,24 @@ PyUnicode_Concat2(PyObject **left, PyObject *right)
 /*
  * PyFile_* compatibility
  */
-#if defined(NPY_PY3K)
+
 /*
  * Get a FILE* handle to the file represented by the Python object
  */
 static NPY_INLINE FILE*
 npy_PyFile_Dup2(PyObject *file, char *mode, npy_off_t *orig_pos)
 {
-    int fd, fd2;
-    PyObject *ret, *os;
+    int fd, fd2, unbuf;
+    PyObject *ret, *os, *io, *io_raw;
     npy_off_t pos;
     FILE *handle;
+
+    /* For Python 2 PyFileObject, use PyFile_AsFile */
+#if !defined(NPY_PY3K)
+    if (PyFile_Check(file)) {
+        return PyFile_AsFile(file);
+    }
+#endif
 
     /* Flush first to ensure things end up in the file in the correct order */
     ret = PyObject_CallMethod(file, "flush", "");
@@ -193,9 +208,30 @@ npy_PyFile_Dup2(PyObject *file, char *mode, npy_off_t *orig_pos)
     /* Record the original raw file handle position */
     *orig_pos = npy_ftell(handle);
     if (*orig_pos == -1) {
-        PyErr_SetString(PyExc_IOError, "obtaining file position failed");
-        fclose(handle);
-        return NULL;
+        /* The io module is needed to determine if buffering is used */
+        io = PyImport_ImportModule("io");
+        if (io == NULL) {
+            fclose(handle);
+            return NULL;
+        }
+        /* File object instances of RawIOBase are unbuffered */
+        io_raw = PyObject_GetAttrString(io, "RawIOBase");
+        Py_DECREF(io);
+        if (io_raw == NULL) {
+            fclose(handle);
+            return NULL;
+        }
+        unbuf = PyObject_IsInstance(file, io_raw);
+        Py_DECREF(io_raw);
+        if (unbuf == 1) {
+            /* Succeed if the IO is unbuffered */
+            return handle;
+        }
+        else {
+            PyErr_SetString(PyExc_IOError, "obtaining file position failed");
+            fclose(handle);
+            return NULL;
+        }
     }
 
     /* Seek raw handle to the Python-side position */
@@ -224,9 +260,16 @@ npy_PyFile_Dup2(PyObject *file, char *mode, npy_off_t *orig_pos)
 static NPY_INLINE int
 npy_PyFile_DupClose2(PyObject *file, FILE* handle, npy_off_t orig_pos)
 {
-    int fd;
-    PyObject *ret;
+    int fd, unbuf;
+    PyObject *ret, *io, *io_raw;
     npy_off_t position;
+
+    /* For Python 2 PyFileObject, do nothing */
+#if !defined(NPY_PY3K)
+    if (PyFile_Check(file)) {
+        return 0;
+    }
+#endif
 
     position = npy_ftell(handle);
 
@@ -241,9 +284,30 @@ npy_PyFile_DupClose2(PyObject *file, FILE* handle, npy_off_t orig_pos)
     if (fd == -1) {
         return -1;
     }
+
     if (npy_lseek(fd, orig_pos, SEEK_SET) == -1) {
-        PyErr_SetString(PyExc_IOError, "seeking file failed");
-        return -1;
+
+        /* The io module is needed to determine if buffering is used */
+        io = PyImport_ImportModule("io");
+        if (io == NULL) {
+            return -1;
+        }
+        /* File object instances of RawIOBase are unbuffered */
+        io_raw = PyObject_GetAttrString(io, "RawIOBase");
+        Py_DECREF(io);
+        if (io_raw == NULL) {
+            return -1;
+        }
+        unbuf = PyObject_IsInstance(file, io_raw);
+        Py_DECREF(io_raw);
+        if (unbuf == 1) {
+            /* Succeed if the IO is unbuffered */
+            return 0;
+        }
+        else {
+            PyErr_SetString(PyExc_IOError, "seeking file failed");
+            return -1;
+        }
     }
 
     if (position == -1) {
@@ -264,6 +328,12 @@ static NPY_INLINE int
 npy_PyFile_Check(PyObject *file)
 {
     int fd;
+    /* For Python 2, check if it is a PyFileObject */
+#if !defined(NPY_PY3K)
+    if (PyFile_Check(file)) {
+        return 1;
+    }
+#endif
     fd = PyObject_AsFileDescriptor(file);
     if (fd == -1) {
         PyErr_Clear();
@@ -271,26 +341,6 @@ npy_PyFile_Check(PyObject *file)
     }
     return 1;
 }
-
-#else
-
-static NPY_INLINE FILE *
-npy_PyFile_Dup2(PyObject *file,
-                const char *NPY_UNUSED(mode), npy_off_t *NPY_UNUSED(orig_pos))
-{
-    return PyFile_AsFile(file);
-}
-
-static NPY_INLINE int
-npy_PyFile_DupClose2(PyObject *NPY_UNUSED(file), FILE* NPY_UNUSED(handle),
-                     npy_off_t NPY_UNUSED(orig_pos))
-{
-    return 0;
-}
-
-#define npy_PyFile_Check PyFile_Check
-
-#endif
 
 static NPY_INLINE PyObject*
 npy_PyFile_OpenFile(PyObject *filename, const char *mode)

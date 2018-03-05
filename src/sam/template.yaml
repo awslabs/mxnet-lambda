@@ -18,7 +18,7 @@ Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      DefinitionUri: s3://smallya-useast-1/mx-sam/swagger.yaml #UPDATE
+      DefinitionUri: s3://smallya-useast-1/geo/swagger.yaml #UPDATE
       StageName: prod
       Variables:
         # NOTE: Before using this template, replace the <<region>> and <<account>> fields
@@ -31,7 +31,7 @@ Resources:
     Properties:
       Handler: lambda_function.lambda_handler
       Runtime: python2.7
-      CodeUri: s3://smallya-useast-1/mx-sam/lambda_function.zip #UPDATE
+      CodeUri: s3://smallya-useast-1/geo/lambda_function.zip #UPDATE
       Description: MXNet Lambda Function 
       MemorySize: 1536
       Timeout: 60

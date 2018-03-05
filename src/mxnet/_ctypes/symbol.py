@@ -1,3 +1,20 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
 # coding: utf-8
 # pylint: disable=invalid-name, protected-access, too-many-arguments,  global-statement
 """Symbolic configuration API."""
@@ -8,8 +25,6 @@ from ..base import _LIB
 from ..base import c_array, c_str, mx_uint
 from ..base import SymbolHandle
 from ..base import check_call
-from ..name import NameManager
-from .common import CachedOp  # pylint: disable=unused-import
 
 _symbol_cls = None
 
@@ -64,7 +79,7 @@ class SymbolBase(object):
 
         num_args = len(args) + len(kwargs)
         if len(kwargs) != 0:
-            keys = c_array(ctypes.c_char_p, [c_str(key) for key in kwargs.keys()])
+            keys = c_array(ctypes.c_char_p, [c_str(key) for key in kwargs])
             args = c_array(SymbolHandle, [s.handle for s in kwargs.values()])
         else:
             keys = None
@@ -81,7 +96,7 @@ class SymbolBase(object):
             The attributes to set
         """
         keys = c_array(ctypes.c_char_p,
-                       [c_str(key) for key in kwargs.keys()])
+                       [c_str(key) for key in kwargs])
         vals = c_array(ctypes.c_char_p,
                        [c_str(str(val)) for val in kwargs.values()])
         num_args = mx_uint(len(kwargs))
@@ -100,20 +115,6 @@ def _set_symbol_class(cls):
     """Set the symbolic class to be cls"""
     global _symbol_cls
     _symbol_cls = cls
-
-
-def invoke(cached_op, args, name=None):
-    """Call cached symbolic operator"""
-    ret = SymbolHandle()
-    hint = cached_op.op.lower()
-    name = c_str(NameManager.current.get(name, hint))
-    check_call(_LIB.MXCachedCreateSymbol(
-        cached_op.handle,
-        name,
-        mx_uint(len(args)),
-        c_array(SymbolHandle, [s.handle for s in args]),
-        ctypes.byref(ret)))
-    return _symbol_cls(ret)
 
 
 def _symbol_creator(handle, args, kwargs, keys, vals, name):

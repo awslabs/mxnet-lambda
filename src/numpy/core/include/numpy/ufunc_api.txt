@@ -1,6 +1,6 @@
 
 =================
-Numpy Ufunc C-API
+NumPy Ufunc C-API
 =================
 ::
 
@@ -8,7 +8,7 @@ Numpy Ufunc C-API
   PyUFunc_FromFuncAndData(PyUFuncGenericFunction *func, void
                           **data, char *types, int ntypes, int nin, int
                           nout, int identity, const char *name, const
-                          char *doc, int check_return)
+                          char *doc, int unused)
 
 
 ::
@@ -230,8 +230,8 @@ owns a new reference to errobj.
                                       **data, char *types, int
                                       ntypes, int nin, int nout, int
                                       identity, const char *name, const
-                                      char *doc, int check_return, const
-                                      char *signature)
+                                      char *doc, int unused, const char
+                                      *signature)
 
 
 ::
