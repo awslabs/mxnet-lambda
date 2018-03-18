@@ -742,11 +742,8 @@ class TestGradient(TestCase):
 
         # distances must be scalars or have size equal to gradient[axis]
         gradient(np.arange(5), 3.)
-        gradient(np.arange(5), np.array(3.))
         gradient(np.arange(5), dx)
-        # dy is set equal to dx because scalar
-        gradient(f_2d, 1.5)
-        gradient(f_2d, np.array(1.5))
+        gradient(f_2d, 1.5)  # dy is set equal to dx because scalar
 
         gradient(f_2d, dx_uneven, dx_uneven)
         # mix between even and uneven spaces and
@@ -755,10 +752,6 @@ class TestGradient(TestCase):
 
         # 2D but axis specified
         gradient(f_2d, dx, axis=1)
-
-        # 2d coordinate arguments are not yet allowed
-        assert_raises_regex(ValueError, '.*scalars or 1d',
-            gradient, f_2d, np.stack([dx]*2, axis=-1), 1)
 
     def test_badargs(self):
         f_2d = np.arange(25).reshape(5, 5)
@@ -1767,14 +1760,6 @@ class TestHistogram(TestCase):
         arr = np.array([0.,  0.,  0.,  1.,  2.,  3.,  3.,  4.,  5.])
         hist, edges = np.histogram(arr, bins=30, range=(-0.5, 5))
         self.assertEqual(hist[-1], 1)
-
-    def test_unsigned_monotonicity_check(self):
-        # Ensures ValueError is raised if bins not increasing monotonically
-        # when bins contain unsigned values (see #9222)
-        arr = np.array([2])
-        bins = np.array([1, 3, 1], dtype='uint64')
-        with assert_raises(ValueError):
-            hist, edges = np.histogram(arr, bins=bins)
 
 
 class TestHistogramOptimBinNums(TestCase):

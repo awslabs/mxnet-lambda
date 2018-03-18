@@ -48,7 +48,7 @@ Glossary
          array([(1, 2.0), (3, 4.0)],
                dtype=[('x', '<i4'), ('y', '<f8')])
 
-       Fast element-wise operations, called :term:`ufuncs`, operate on arrays.
+       Fast element-wise operations, called `ufuncs`_, operate on arrays.
 
    array_like
        Any sequence that can be interpreted as an ndarray.  This includes
@@ -82,7 +82,7 @@ Glossary
          array([[4, 5],
                 [5, 6]])
 
-       See `numpy.doc.broadcasting` for more information.
+       See `doc.broadcasting`_ for more information.
 
    C order
        See `row-major`
@@ -155,8 +155,7 @@ Glossary
        See `column-major`
 
    flattened
-       Collapsed to a one-dimensional array. See `numpy.ndarray.flatten`
-       for details.
+       Collapsed to a one-dimensional array. See `ndarray.flatten`_ for details.
 
    immutable
        An object that cannot be modified after execution is called
@@ -285,9 +284,9 @@ Glossary
        See *array*.
 
    record array
-       An :term:`ndarray` with :term:`structured data type`_ which has been
-       subclassed as ``np.recarray`` and whose dtype is of type ``np.record``,
-       making the fields of its data type to be accessible by attribute.
+       An `ndarray`_ with `structured data type`_ which has been subclassed as
+       np.recarray and whose dtype is of type np.record, making the
+       fields of its data type to be accessible by attribute.
 
    reference
        If ``a`` is a reference to ``b``, then ``(a is b) == True``.  Therefore,
@@ -349,10 +348,10 @@ Glossary
 
          >>> x[:, 1]
          array([2, 4])
-
+   
    structured data type
        A data type composed of other datatypes
-
+   
    tuple
        A sequence that may contain a variable number of types of any
        kind.  A tuple is immutable, i.e., once constructed it cannot be
