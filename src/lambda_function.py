@@ -19,9 +19,9 @@ from urllib import urlretrieve
 if os.environ.get('LAMBDA_TASK_ROOT') is None:
     print "just exit, we are not in a lambda function",
     import sys; sys.exit(0)
-    
-from geopy.geocoders import Nominatim
-geolocator = Nominatim()
+
+import geopy
+geolocator = geopy.geocoders.GoogleV3()
     
 # del all files in tmp directory - just in case
 import os
