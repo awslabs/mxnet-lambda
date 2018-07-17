@@ -21,9 +21,21 @@ def preprocess(event):
     """
     img = None
     try:
-        # API Gateway POST method with file
-        multipart_string = event['body'].decode('base64')
-        img = Image.open(StringIO(multipart_string))
+        # GET method
+        if event.has_key('httpMethod') and event['httpMethod'] == 'GET':
+            url = event['queryStringParameters']['url']
+            # download image from url
+            img_file = tempfile.NamedTemporaryFile(delete=True)
+            if url:
+                req = urllib2.urlopen(url)
+                img_file.write(req.read())
+                img_file.flush()
+            img = Image.open(img_file.name)
+            img_file.close()
+        # POST method
+        else:
+            multipart_string = event['body'].decode('base64')
+            img = Image.open(StringIO(multipart_string))
     except KeyError:
         # direct invocation
         url = event['url']
