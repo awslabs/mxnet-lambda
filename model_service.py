@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image
 from StringIO import StringIO
 
+
 ctx = mx.cpu()
 
 

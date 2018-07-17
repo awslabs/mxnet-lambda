@@ -1,5 +1,6 @@
+import yaml
+
 import mxnet as mx
-from model_url import *
 
 import tempfile
 from urllib import urlretrieve
@@ -29,6 +30,10 @@ def load_model(s_fname, p_fname):
             aux_params[name] = v
     return symbol, arg_params, aux_params
 
+
+model_url = yaml.load(open("model_url.yaml", "r"))
+url_params = model_url["url_params"]
+url_symbol = model_url["url_symbol"]
 
 # download params
 f_params_file = tempfile.NamedTemporaryFile(delete=True)
