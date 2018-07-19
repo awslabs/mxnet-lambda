@@ -22,14 +22,13 @@ def load_model(s_fname, p_fname):
     save_dict = mx.nd.load(p_fname)
     arg_params = {}
     aux_params = {}
-    for k, v in save_dict.items():
-        tp, name = k.split(':', 1)
+    for key, value in save_dict.items():
+        tp, name = key.split(':', 1)
         if tp == 'arg':
-            arg_params[name] = v
+            arg_params[name] = value
         if tp == 'aux':
-            aux_params[name] = v
+            aux_params[name] = value
     return symbol, arg_params, aux_params
-
 
 model_url = yaml.load(open("model_url.yaml", "r"))
 url_params = model_url["url_params"]
