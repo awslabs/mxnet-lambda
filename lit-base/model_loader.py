@@ -7,7 +7,7 @@ from urllib import urlretrieve
 
 
 # load model
-def load_model(s_fname, p_fname):
+def load_model(symbol_filename, params_filename):
     """
     Load model checkpoint from file.
     :return: (symbol, arg_params, aux_params)
@@ -18,8 +18,8 @@ def load_model(s_fname, p_fname):
     aux_params : dict of str to NDArray
         Model parameter, dict of name to NDArray of net's auxiliary states.
     """
-    symbol = mx.symbol.load(s_fname)
-    save_dict = mx.nd.load(p_fname)
+    symbol = mx.symbol.load(symbol_filename)
+    save_dict = mx.nd.load(params_filename)
     arg_params = {}
     aux_params = {}
     for key, value in save_dict.items():
@@ -47,4 +47,4 @@ f_symbol_file.flush()
 f_symbol_file_name = f_symbol_file.name
 
 # load model from symbol and params
-sym, arg_params, aux_params = load_model(f_symbol_file_name, f_params_file.name)
+sym, arg_params, aux_params = load_model(f_symbol_file_name, f_params_file_name)

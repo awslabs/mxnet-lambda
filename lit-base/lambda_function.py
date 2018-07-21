@@ -13,7 +13,6 @@ class BaseResponse:
 
 
 def lambda_handler(event, context):
-
     # serving 
     data    = preprocess(event)
     output   = inference(data)
