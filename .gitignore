@@ -1,4 +1,5 @@
-output_file
+.DS_Store
 *.zip
-__pycache__
 *.pyc
+.idea
+lit_cli.egg-info
