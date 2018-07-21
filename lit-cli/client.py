@@ -57,7 +57,7 @@ def deploy(function_name, region, role, memory_size, timeout, publish):
         info['role'] = role
     info['memory_size'] = memory_size
     info['timeout'] = timeout
-    os.system('zip -9r lambda_function.zip  * -x *.params *symbol.json *.onnx')
+    subprocess.call('zip -9r lambda_function.zip  * -x *.params *symbol.json *.onnx', shell=True)
     cmd = 'aws lambda create-function'
     cmd += ' --function-name ' + info['function_name']
     cmd += ' --zip-file fileb://lambda_function.zip'
@@ -70,7 +70,7 @@ def deploy(function_name, region, role, memory_size, timeout, publish):
     if publish:
         cmd += ' --publish'
     np.save('.lit-info.npy',info)
-    os.system(cmd)
+    subprocess.call(cmd, shell=True)
 
 
 @click.command()
@@ -82,7 +82,7 @@ def update(memory_size, timeout, publish):
     info = np.load('.lit-info.npy').item()
     info['memory_size'] = memory_size or info['memory_size']
     info['timeout'] = timeout or info['timeout']
-    os.system('zip -9r lambda_function.zip  *')
+    subprocess.call('zip -9r lambda_function.zip  *', shell=True)
     cmd = 'aws lambda update-function-configuration'
     cmd += ' --function-name ' + info['function_name']
     cmd += ' --region ' + info['region']
@@ -90,9 +90,9 @@ def update(memory_size, timeout, publish):
     cmd += ' --timeout ' + info['timeout']
     if publish:
         cmd += ' --publish'
-    os.system(cmd)
+    subprocess.call(cmd, shell=True)
     np.save('.lit-info.npy',info)
-    os.system('aws lambda update-function-code --region '+info['region']+' --function-name '+info['function_name']+' --zip-file fileb://lambda_function.zip')
+    subprocess.call('aws lambda update-function-code --region '+info['region']+' --function-name '+info['function_name']+' --zip-file fileb://lambda_function.zip', shell=True)
 
 
 @click.command()
@@ -130,10 +130,10 @@ def config(params, symbol, onnx, odel_bucket):
     assert(params[-7:] == '.params')
     assert(symbol[-5:] == '.json')
     if '://' not in params:
-        os.system("aws s3 cp " + params + " s3://" + info['model_bucket'] + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers")
+        subprocess.call("aws s3 cp " + params + " s3://" + info['model_bucket'] + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers", shell=True)
         params = "https://" + info['model_bucket'] + '.s3.amazonaws.com/' + params.split('/')[-1]
     if '://' not in symbol:
-        os.system("aws s3 cp " + symbol + " s3://" + info['model_bucket'] + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers")
+        subprocess.call("aws s3 cp " + symbol + " s3://" + info['model_bucket'] + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers", shell=True)
         symbol = "https://" + info['model_bucket'] + '.s3.amazonaws.com/' + symbol.split('/')[-1]
     with open('model_url.py', 'w') as f:
         f.write('url_params = "' + params + '"\nurl_symbol = "' + symbol + '"\n')
