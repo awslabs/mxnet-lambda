@@ -10,7 +10,7 @@ def do_install(package_name, requirement=False):
     except Exception:
         from pip import main
     if not requirement:
-        main(['install'] + pkgs + ['-t', '.'])
+        main(['install'] + package_name + ['-t', '.'])
     else:
         main(['install', '-r', package_name, '-t', '.'])
 
@@ -101,7 +101,7 @@ def update(memory_size, timeout, publish):
 @click.option('--onnx', default=None, help="ONNX model to load (local file path)")
 @click.option('--model-service', default=None, help="Model service that defines preprocess, inference, postprocess procedure (local file path)")
 @click.option('--model-bucket', default=None, help="S3 bucket for model storage")
-def config(params, symbol, onnx, odel_bucket):
+def config(params, symbol, onnx, model_bucket):
     """
     Cconfigure model PARAMS and SYMBOL in either local file name or online file link.
     If local file name is supplied, it will be uploaded to a S3 bucket and the link of the online copy will be used.
