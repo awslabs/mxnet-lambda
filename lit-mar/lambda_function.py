@@ -6,6 +6,8 @@ import os
 import json
 import subprocess
 
+import yaml
+
 class Context(object):
     pass
 
@@ -30,8 +32,8 @@ class BaseResponse(object):
 
 
 def lambda_handler(event, context):
-    
-    model_url = "https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/test.mar"
+    config = yaml.load(open('config.yaml'))
+    model_url = config["url_mar"]
     urllib.urlretrieve(model_url, "/tmp/mar.zip")
     subprocess.call("unzip /tmp/mar.zip -d /tmp", shell=True)
     sys.path.insert(0, os.getcwd())
