@@ -89,21 +89,28 @@ def create(model_archive, model_bucket):
         return
     # create a tmp path
     dirpath = tempfile.mkdtemp()
+    # download if is url
     if is_url:
         download_url(model_archive, os.path.join(dirpath, "tmp.mar"))
         url_mar = model_archive
         model_archive = os.path.join(dirpath, "tmp.mar")
+    # unzip
     subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
+    # install requirements
     do_install('pyyaml', requirement=False, target='.')
     if check_existence('requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
-    if not check_existence('mxnet/', dirpath):
+    if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', '.') == False:
         do_install('mxnet', requirement=False, target='.')
+        # rollback numpy to 1.13 (avoid problems with the latest version)
+        if check_existence('numpy/', '.'):
+            shutil.rmtree('numpy/')
+            do_install('numpy==1.13.3', requirement=False, target='.')
     # remove temp path
     shutil.rmtree(dirpath)
     if not is_url:
         # upload model_archive
-        status = subprocess.call("aws s3 cp " + symbol + " s3://" + model_bucket + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers", shell=True)
+        status = subprocess.call("aws s3 cp " + model_archive + " s3://" + model_bucket + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers", shell=True)
         if status != 0:
             click.echo("Failed to upload model archive to S3.")
             return
