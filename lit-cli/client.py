@@ -75,12 +75,16 @@ def cli():
 # Executed under path/to/lambda/function/package
 @click.command()
 @click.argument('package_name')
-def create(model_archive):
+@click.option('--model-bucket', default=None, help="S3 bucket for model storage")
+def create(model_archive, model_bucket):
     """Configure Lambda Function to consume Model Archive
     MODEL_ARCHIVE could be provided either as a url or path to a local model archive
     """
     # check weither it is url
     is_url = "://" in model_archive
+    if is_url and model_bucket==None:
+        click.echo("Please specify S3 bucket for model storage")
+        return
     # create a tmp path
     dirpath = tempfile.mkdtemp()
     if is_url:
@@ -95,9 +99,14 @@ def create(model_archive):
     shutil.rmtree(dirpath)
     if not is_url:
         # upload model_archive
+        status = subprocess.call("aws s3 cp " + symbol + " s3://" + model_bucket + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers", shell=True)
+        if status != 0:
+            click.echo("Failed to upload model archive to S3.")
+            return
 
 
 cli.add_command(config)
+
 
 if __name__ == "__main__":
     cli()
