@@ -57,7 +57,7 @@ def deploy(function_name, region, role, memory_size, timeout, publish):
         info['role'] = role
     info['memory_size'] = memory_size
     info['timeout'] = timeout
-    subprocess.call('zip -9r lambda_function.zip  * -x *.params *symbol.json *.onnx', shell=True)
+    subprocess.call('zip -9r lambda_function.zip  * -x *.params *symbol.json', shell=True)
     cmd = 'aws lambda create-function'
     cmd += ' --function-name ' + info['function_name']
     cmd += ' --zip-file fileb://lambda_function.zip'
@@ -98,33 +98,21 @@ def update(memory_size, timeout, publish):
 @click.command()
 @click.option('--params', default=None, help="Model params to load (local file path or url link)")
 @click.option('--symbol', default=None, help="Model symbol to load (local file path or url link)")
-@click.option('--onnx', default=None, help="ONNX model to load (local file path)")
 @click.option('--model-service', default=None, help="Model service that defines preprocess, inference, postprocess procedure (local file path)")
 @click.option('--model-bucket', default=None, help="S3 bucket for model storage")
-def config(params, symbol, onnx, model_bucket):
+def config(params, symbol, model_bucket):
     """
     Cconfigure model PARAMS and SYMBOL in either local file name or online file link.
     If local file name is supplied, it will be uploaded to a S3 bucket and the link of the online copy will be used.
     When model-bucket is supplied, this file will be uploaded to (and during inference loaded from) the specified S3 bucket.
     """
-    if onnx != None:
-        if params == None or symbol == None:
-            click.echo("Don't specify ONNX and MXNet model at the same time!")
-    if '://' not in params or '://' not in symbol or onnx != None:
+    if '://' not in params or '://' not in symbol:
         if model_bucket == None:
             click.echo("Please specify S3 bucket for model storage")
             return
     info = np.load('.lit-info.npy').item()
     info['model_bucket'] = model_bucket or info['model_bucket']
     np.save('.lit-info.npy',info)
-    if onnx != None:
-        assert(onnx[-5:] == '.onnx')
-        import mxnet
-        import mxnet.contrib.onnx as onnx_mxnet
-        sym, arg, aux = onnx_mxnet.import_model(onnx)
-        mxnet.model.save_checkpoint(onnx[:-5], 0, sym, arg, aux)
-        params = onnx[:-5] + '-0000.params'
-        symbol = onnx[:-5] + '-symbol.json'
     if model_service != None:
         shutil.copyfile(model_service, 'model_service.py')
     assert(params[-7:] == '.params')
