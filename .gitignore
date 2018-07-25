@@ -1,2 +1,6 @@
 .DS_Store
+*.zip
+*.pyc
+.idea
+lit_cli.egg-info
 

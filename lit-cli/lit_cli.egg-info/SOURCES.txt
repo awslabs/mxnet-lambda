@@ -1,7 +1,0 @@
-client.py
-lit_cli.egg-info/PKG-INFO
-lit_cli.egg-info/SOURCES.txt
-lit_cli.egg-info/dependency_links.txt
-lit_cli.egg-info/entry_points.txt
-lit_cli.egg-info/requires.txt
-lit_cli.egg-info/top_level.txt
