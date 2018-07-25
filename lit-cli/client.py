@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import subprocess
 import urllib
+import yaml
 
 
 def do_install(package_name, requirement=False, target='.'):
@@ -26,7 +27,7 @@ def do_install(package_name, requirement=False, target='.'):
         from pip import main
     # install requirement or requirements.txt
     if not requirement:
-        main(['install'] + package_name + ['-t', target])
+        main(['install', package_name, '-t', target])
     else:
         main(['install', '-r', package_name, '-t', target])
 
@@ -68,13 +69,13 @@ def check_existence(filename, path):
 
 @click.group()
 def cli():
-    """Entry Point"""
+    """Lambda Inference Toolkit Command Line Client"""
     pass
 
 
 # Executed under path/to/lambda/function/package
 @click.command()
-@click.argument('package_name')
+@click.argument('model_archive')
 @click.option('--model-bucket', default=None, help="S3 bucket for model storage")
 def create(model_archive, model_bucket):
     """Configure Lambda Function to consume Model Archive
@@ -82,6 +83,7 @@ def create(model_archive, model_bucket):
     """
     # check weither it is url
     is_url = "://" in model_archive
+    url_mar = None
     if is_url and model_bucket==None:
         click.echo("Please specify S3 bucket for model storage")
         return
@@ -89,12 +91,14 @@ def create(model_archive, model_bucket):
     dirpath = tempfile.mkdtemp()
     if is_url:
         download_url(model_archive, os.path.join(dirpath, "tmp.mar"))
+        url_mar = model_archive
         model_archive = os.path.join(dirpath, "tmp.mar")
     subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
+    do_install('pyyaml', requirement=False, target='.')
     if check_existence('requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
     if not check_existence('mxnet/', dirpath):
-        do_install('mxnet', requirements=False, target='.')
+        do_install('mxnet', requirement=False, target='.')
     # remove temp path
     shutil.rmtree(dirpath)
     if not is_url:
@@ -103,9 +107,12 @@ def create(model_archive, model_bucket):
         if status != 0:
             click.echo("Failed to upload model archive to S3.")
             return
+        url_mar = "https://" + model_bucket + '.s3.amazonaws.com/' + model_archive.split('/')[-1]
+    with open('config.yaml', 'w') as outfile:
+        yaml.dump({"url_mar": str(url_mar)}, outfile, default_flow_style=False)
 
 
-cli.add_command(config)
+cli.add_command(create)
 
 
 if __name__ == "__main__":

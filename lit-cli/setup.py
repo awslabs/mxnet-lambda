@@ -5,7 +5,7 @@ setup(
     name="lit-cli",
     version='0.1',
     py_modules=['client'],
-    install_requires=['Click'],
+    install_requires=['click', 'pyyaml'],
     entry_points='''
         [console_scripts]
         lit-cli=client:cli
