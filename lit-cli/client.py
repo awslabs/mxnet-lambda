@@ -3,16 +3,28 @@ import os, shutil
 import numpy as np
 
 
-def do_install(package_name, requirement=False):
-    """Install packages locally without external dependency"""
+def do_install(package_name, target='.', requirement=False):
+    """Install packages locally without external dependency
+
+    Parameters
+    ----------
+    package_name: string
+        package_name or path/to/requirements.txt
+    target: string
+        the target local path for installation
+    requirement: bool
+        whether installation is using requirements.txt
+    """
+    # import pip main robustly against different version of pip and python
     try:
         from pip._internal import main
     except Exception:
         from pip import main
+    # install requirement or requirements.txt
     if not requirement:
-        main(['install'] + package_name + ['-t', '.'])
+        main(['install'] + package_name + ['-t', target])
     else:
-        main(['install', '-r', package_name, '-t', '.'])
+        main(['install', '-r', package_name, '-t', target])
 
 
 @click.group()
