@@ -3,7 +3,7 @@ import os, shutil
 import numpy as np
 
 
-def do_install(package_name, target='.', requirement=False):
+def do_install(package_name, requirement=False, target='.'):
     """Install packages locally without external dependency
 
     Parameters
