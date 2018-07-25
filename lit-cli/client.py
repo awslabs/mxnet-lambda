@@ -1,9 +1,13 @@
 import click
-import os, shutil
+
+import os
+import shutil
+import tempfile
+import subprocess
 import urllib
 
 
-def do_install(package_name, target='.', requirement=False):
+def do_install(package_name, requirement=False, target='.'):
     """Install packages locally without external dependency
 
     Parameters
@@ -56,10 +60,10 @@ def check_existence(filename, path):
     
     Examples
     ----------
-    >>> check_existence('mxnet', '.')
+    >>> check_existence('mxnet/', '.')
     >>> check_existence('requirements.txt', '.')
     """
-    return os.path.exists(os.path.join(filename, path))
+    return os.path.exists(os.path.join(path, filename))
 
 
 @click.group()
@@ -68,14 +72,29 @@ def cli():
     pass
 
 
+# Executed under path/to/lambda/function/package
 @click.command()
 @click.argument('package_name')
-def config(model_archive):
-    """Configure Lambda Function to consume mpdel_archive
-    MODEL_ARCHIVE could be provided either as a url or
-    path to a local model archive"""
+def create(model_archive):
+    """Configure Lambda Function to consume Model Archive
+    MODEL_ARCHIVE could be provided either as a url or path to a local model archive
+    """
     # check weither it is url
-    is_url = "://" in model_archive:
+    is_url = "://" in model_archive
+    # create a tmp path
+    dirpath = tempfile.mkdtemp()
+    if is_url:
+        download_url(model_archive, os.path.join(dirpath, "tmp.mar"))
+        model_archive = os.path.join(dirpath, "tmp.mar")
+    subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
+    if check_existence('requirements.txt', dirpath):
+        do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
+    if not check_existence('mxnet/', dirpath):
+        do_install('mxnet', requirements=False, target='.')
+    # remove temp path
+    shutil.rmtree(dirpath)
+    if not is_url:
+        # upload model_archive
 
 
 cli.add_command(config)
