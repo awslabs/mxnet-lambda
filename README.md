@@ -68,7 +68,7 @@ lit-cli use https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/img_
 ```
 
 #### Deploy package
-- Before deploying the project to SAM for the first time, you'll need to update some variables in `template.yaml`/`swagger.yaml` (found in `sam/` folder).
+- Before deploying the project to SAM for the first time, you'll need to update some variables in `template.yaml`/`swagger.yaml`
 
 ```
 # swagger.yaml
