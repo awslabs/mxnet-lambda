@@ -56,9 +56,9 @@ cp ../sam/* .
 ```
 
 #### [Optional] Configure Model Archive
-If your model archive pack all requirements inside the MAR, you are good.
+If your model archive pack all requirements inside the MAR, modify `config.json` and then you are good.
 
-Otherwise, configure it with
+Otherwise, make sure to configure it with
 ```
 lit-cli use <MODEL_ARCHIVE> [--model-bucket <MODEL_BUCKET>]
 ```
