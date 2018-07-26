@@ -101,11 +101,9 @@ def create(model_archive, model_bucket):
     if check_existence('requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
     if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', '.') == False:
-        do_install('mxnet', requirement=False, target='.')
         # rollback numpy to 1.13 (avoid problems with the latest version)
-        if check_existence('numpy/', '.'):
-            shutil.rmtree('numpy/')
-            do_install('numpy==1.13.3', requirement=False, target='.')
+        do_install('numpy==1.13.3', requirement=False, target='.')
+        do_install('mxnet', requirement=False, target='.')
     # remove temp path
     shutil.rmtree(dirpath)
     if not is_url:
