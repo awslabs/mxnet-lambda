@@ -1,14 +1,14 @@
-# Lambda-Inference-Toolkit (LIT)
+# MXNet Lambda
 
 ## Introduction
 
-Lambda Inference Toolkit provides a toolkit for testing, deploying and serving machine learning models in a serverless manner.
+MXNet Lambda provides a toolkit for testing, deploying and serving deep learning models using MXNet using a serverless approach.
 
 It is built on MXNet and AWS Lambda, but could also deploy models developed with other frameworks that support ONNX (PyTorch, CNTK, Caffe2, etc.). It provides a charge-by-query solution for AWS customers who host/use AI applications, with reasonable performance and effortless and limitless scalability. 
 
 ## Documentation
 
-[Lambda Inference Toolkit Wiki](docs/Home.md)
+[MXNet Lambda Wiki](docs/Home.md)
 
 ## Demo
 ```
@@ -33,30 +33,29 @@ AWS IAM ARN (https://docs.aws.amazon.com/IAM/latest/UserGuide//id_roles.html) se
 
 Python 2.7 (https://www.python.org/download/releases/2.7/) with `pip`
 
-[Optional] ONNX (https://github.com/onnx/onnx) if you want to import from ONNX
-
 #### Installation
 ```
-git clone https://github.com/anchen1011/lambda-inference-toolkit.git
-cd lambda-inference-toolkit
+git clone https://github.com/anchen1011/mxnet-lambda.git
+cd mxnet-lambda
 pip install lit-cli/
 ```
 
 #### Create and deploy package
 ```
-lit-cli create lit-demo
-cd lit-demo
+lit-cli create mxnet-lambda-demo
+cd mxnet-lambda-demo
+lit-cli install requirements.txt -r
 lit-cli deploy --role ROLE_ARN
 ```
-AWS has provide a role template for Lambda, and could be created following https://docs.aws.amazon.com/lambda/latest/dg/with-userapp-walkthrough-custom-events-create-iam-role.html
+AWS provides managed role for Lambda, and could be created following https://docs.aws.amazon.com/lambda/latest/dg/with-userapp-walkthrough-custom-events-create-iam-role.html
 
-Make sure your `ROLE_ARN` is in the format of `arn:aws:iam::<number>:role/<role_name>` (https://github.com/motdotla/node-lambda-template/issues/1).
+Make sure your `ROLE_ARN` is in the format of `arn:aws:iam::<iam_account_number>:role/<role_name>`.
 
 #### Invoke your package
 ```
 aws lambda invoke \
 --invocation-type RequestResponse \
---function-name lit-demo \
+--function-name mxnet-lambda-demo \
 --region us-east-2 \
 --log-type Tail \
 --payload '{"url": "https://github.com/dmlc/web-data/blob/master/mxnet/doc/tutorials/python/predict_image/cat.jpg?raw=true"}' \
