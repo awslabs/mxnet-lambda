@@ -69,4 +69,4 @@ sym, arg_params, aux_params = load_model(symbol_filename, params_filename)
 
 # load labels from synset
 with open(synset_filename, 'r') as file:
-    labels = [line.rstrip() for line in file]
+    labels = [line.rstrip() for line in file][1:]
