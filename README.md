@@ -33,9 +33,9 @@ AWS IAM ARN (https://docs.aws.amazon.com/IAM/latest/UserGuide//id_roles.html) se
 
 Python 2.7 (https://www.python.org/download/releases/2.7/) with `pip`
 
-* In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 bucket in which SAM can create the deployment artifacts.
+In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 bucket in which SAM can create the deployment artifacts.
 
-Else create a new bucket using the following AWS CLI command:
+* Else create a new bucket using the following AWS CLI command:
 
 ```
 aws s3 mb s3://<your-bucket-name> --region <your-bucket-region>
