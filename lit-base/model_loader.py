@@ -31,7 +31,7 @@ def load_model(symbol_filename, params_filename):
     return symbol, arg_params, aux_params
 
 
-def download_url(url, target='.'):
+def download_url(url, target):
     """Download online file
 
     Parameters
