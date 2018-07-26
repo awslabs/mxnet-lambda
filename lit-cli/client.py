@@ -204,7 +204,7 @@ def use(model_archive, model_bucket):
     subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
     # install requirements
     if check_existence('requirements.txt', dirpath):
-        do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
+        do_install(os.path.join(dirpath, 'requirements.txt'), requirement=True, target='.')
     if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', '.') == False:
         # rollback numpy to 1.13 (avoid problems with the latest version)
         do_install('numpy==1.13.3', requirement=False, target='.')
