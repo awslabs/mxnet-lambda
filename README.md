@@ -55,7 +55,7 @@ cd PACKAGE_NAME
 cp ../sam/* .
 ```
 
-#### [Optional] Configure Model Archive
+#### [Optional] Configure Model Archive (only on Amazon Linux)
 If your model archive pack all requirements inside the MAR, modify `config.json` and then you are good.
 
 Otherwise, make sure to configure it with
@@ -115,7 +115,7 @@ curl -H "Content-Type: image/png" -X POST https://MY_URL -T "cat.png"
 ```
 
 
-## Quickstart: CLI
+## Quickstart: CLI 
 
 #### Prerequisites
 AWS CLI (https://aws.amazon.com/cli/) configured
@@ -131,7 +131,7 @@ cd mxnet-lambda
 pip install lit-cli/
 ```
 
-#### Create and deploy package
+#### Create and deploy package (only on Amazon Linux)
 ```
 lit-cli create mxnet-lambda-demo
 cd mxnet-lambda-demo
