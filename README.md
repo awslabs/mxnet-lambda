@@ -107,7 +107,7 @@ aws cloudformation deploy \
 aws cloudformation describe-stacks --stack-name <STACK_NAME> | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["Stacks"][0]["Outputs"][0]["OutputValue"];'
 ```
 
-- Test with POST request
+#### Test with POST request
 
 ```
 wget https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/cat.png
