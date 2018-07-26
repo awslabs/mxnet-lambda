@@ -6,9 +6,6 @@ import os
 import json
 import subprocess
 
-import yaml
-
-
 class Context(object):
     def __init__(self, logger, metrics_writter, request, response, system_info):
         self.logger = logger
@@ -86,7 +83,8 @@ def lambda_handler(event, context):
         In the HTTP response to the invocation request, serialized into JSON.
     """
     # load config
-    config = yaml.load(open('config.yaml'))
+    with open('config.json', 'r') as file:
+        config = json.load(file)
     model_url = config["url_mar"]
     # download and unzip MAR
     urllib.urlretrieve(model_url, "/tmp/mar.zip")
