@@ -90,12 +90,12 @@ zip -r9 lambda_function.zip *
 
 ```
 aws cloudformation package \
---template-file <path-to-file>/template.yaml \
---output-template-file <path-to-file>/template-out.yaml \
+--template-file ./template.yaml \
+--output-template-file ./template-out.yaml \
 --s3-bucket <your-s3-bucket-name>
 
 aws cloudformation deploy \
---template-file <path-to-file>/template-out.yaml \
+--template-file ./template-out.yaml \
 --stack-name <STACK_NAME> \
 --capabilities CAPABILITY_IAM
 ```
