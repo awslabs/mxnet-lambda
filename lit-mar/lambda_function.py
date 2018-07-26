@@ -90,7 +90,8 @@ def lambda_handler(event, context):
     urllib.urlretrieve(model_url, "/tmp/mar.zip")
     subprocess.call("unzip /tmp/mar.zip -d /tmp", shell=True)
     # change wd and make sure dir containing this file and MAR are both in PYTHONPATH
-    sys.path.insert(0, os.getcwd())
+    trigger_dir = os.getcwd()
+    sys.path.insert(0, trigger_dir)
     os.chdir("/tmp")
     sys.path.insert(0, os.getcwd())
     # read MANIFEST to get MAR handler
@@ -116,5 +117,8 @@ def lambda_handler(event, context):
     # trigger MAR handler and get response body
     output = inference(data, ctx)
     response.set_response_body(output)
+    
+    # reverse working dir to avoid config file not found
+    os.chdir(trigger_dir)
 
     return response.get_dict()
