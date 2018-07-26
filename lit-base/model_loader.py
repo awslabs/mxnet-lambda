@@ -45,9 +45,9 @@ def download_url(url, target='.'):
 
 
 with open("config.json", "r") as file:
-    model_url = json.load(file)
-url_params = model_url["url_params"]
-url_symbol = model_url["url_symbol"]
+    config = json.load(file)
+url_params = config["url_params"]
+url_symbol = config["url_symbol"]
 
 dirpath = tempfile.mkdtemp()
 
