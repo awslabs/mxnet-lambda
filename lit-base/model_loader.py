@@ -31,17 +31,23 @@ def load_model(symbol_filename, params_filename):
     return symbol, arg_params, aux_params
 
 
-def download_url(url, target):
-    """Download online file
+def download_url(url):
+    """Download online file into tmp
 
     Parameters
     ----------
     url: string
         url to the file to download
-    target: string
-        the target local path of the downloaded file
+        
+    Return
+    ----------
+    filename: string
+        full path to the file downloaded
     """
-    urllib.urlretrieve(url, target)
+    f_file = tempfile.NamedTemporaryFile(delete=True)
+    urlretrieve(url, f_file.name)
+    f_file.flush()
+    return f_file.name
 
 
 with open("config.json", "r") as file:
@@ -53,21 +59,17 @@ url_synset = config["url_synset"]
 dirpath = tempfile.mkdtemp()
 
 # download params
-params_filename = os.path.join(dirpath, "model-params.params")
-download_url(url_params, params_filename)
+params_filename = download_url(url_params)
 
 # download symbol
-symbol_filename = os.path.join(dirpath, "model-symbol.json")
-download_url(url_symbol, symbol_filename)
+symbol_filename = download_url(url_symbol)
 
 # download synset
-synset_filename = os.path.join(dirpath, "synset.txt")
-download_url(url_synset, synset_filename)
+synset_filename = download_url(url_synset)
 
 # load model from symbol and params
 sym, arg_params, aux_params = load_model(symbol_filename, params_filename)
 
 # load labels from synset
-with open('synset.txt', 'r') as file:
+with open(synset_filename, 'r') as file:
     labels = [line.rstrip() for line in file]
-    
