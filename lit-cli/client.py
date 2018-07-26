@@ -5,7 +5,6 @@ import shutil
 import tempfile
 import subprocess
 import urllib
-import yaml
 
 
 def do_install(package_name, requirement=False, target='.'):
@@ -97,7 +96,6 @@ def create(model_archive, model_bucket):
     # unzip
     subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
     # install requirements
-    do_install('pyyaml', requirement=False, target='.')
     if check_existence('requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
     if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', '.') == False:
@@ -113,8 +111,8 @@ def create(model_archive, model_bucket):
             click.echo("Failed to upload model archive to S3.")
             return
         url_mar = "https://" + model_bucket + '.s3.amazonaws.com/' + model_archive.split('/')[-1]
-    with open('config.yaml', 'w') as outfile:
-        yaml.dump({"url_mar": str(url_mar)}, outfile, default_flow_style=False)
+    with open('config.json', 'w') as outfile:
+        json.dump({"url_mar": str(url_mar)}, outfile)
 
 
 cli.add_command(create)
