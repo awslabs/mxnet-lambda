@@ -8,7 +8,7 @@ It is built on MXNet and AWS Lambda, but could also deploy models developed with
 
 ## Documentation
 
-[Lambda Inference Toolkit Wiki](https://github.com/anchen1011/mxnet-lambda/wiki)
+[Lambda Inference Toolkit Wiki](docs/Home.md)
 
 ## Demo
 ```
@@ -24,7 +24,7 @@ Content-Length: 35
 {"category": "n02123159 tiger cat"}
 ```
 
-## Quickstart (come in next PR)
+## Quickstart
 
 #### Prerequisites
 AWS CLI (https://aws.amazon.com/cli/) configured
