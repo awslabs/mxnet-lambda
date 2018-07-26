@@ -6,6 +6,7 @@ import shutil
 import tempfile
 import subprocess
 import urllib
+import json
 
 
 def do_install(package_name, requirement=False, target='.'):
