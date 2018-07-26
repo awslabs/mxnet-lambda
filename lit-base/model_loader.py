@@ -45,7 +45,7 @@ def download_url(url):
         full path to the file downloaded
     """
     f_file = tempfile.NamedTemporaryFile(delete=True)
-    urlretrieve(url, f_file.name)
+    urllib.urlretrieve(url, f_file.name)
     f_file.flush()
     return f_file.name
 
