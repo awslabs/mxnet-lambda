@@ -44,6 +44,7 @@ pip install lit-cli/
 ```
 lit-cli create mxnet-lambda-demo
 cd mxnet-lambda-demo
+lit-cli install requirements.txt -r
 lit-cli deploy --role ROLE_ARN
 ```
 AWS provides managed role for Lambda, and could be created following https://docs.aws.amazon.com/lambda/latest/dg/with-userapp-walkthrough-custom-events-create-iam-role.html
