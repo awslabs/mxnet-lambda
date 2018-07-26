@@ -1,12 +1,12 @@
-import yaml
+import json
+import os
 
 import mxnet as mx
 
 import tempfile
-from urllib import urlretrieve
+import urllib
 
 
-# load model
 def load_model(symbol_filename, params_filename):
     """
     Load model checkpoint from file.
@@ -30,21 +30,34 @@ def load_model(symbol_filename, params_filename):
             aux_params[name] = value
     return symbol, arg_params, aux_params
 
-model_url = yaml.load(open("model_url.yaml", "r"))
+
+def download_url(url, target='.'):
+    """Download online file
+
+    Parameters
+    ----------
+    url: string
+        url to the file to download
+    target: string
+        the target local path of the downloaded file
+    """
+    urllib.urlretrieve(url, target)
+
+
+with open("config.json", "r") as file:
+    model_url = json.load(file)
 url_params = model_url["url_params"]
 url_symbol = model_url["url_symbol"]
 
+dirpath = tempfile.mkdtemp()
+
 # download params
-f_params_file = tempfile.NamedTemporaryFile(delete=True)
-urlretrieve(url_params, f_params_file.name)
-f_params_file.flush()
-f_params_file_name = f_params_file.name
+params_filename = os.path.join(dirpath, "model-params.params")
+download_url(url_params, params_filename)
 
 # download symbol
-f_symbol_file = tempfile.NamedTemporaryFile(delete=True)
-urlretrieve(url_symbol, f_symbol_file.name)
-f_symbol_file.flush()
-f_symbol_file_name = f_symbol_file.name
+symbol_filename = os.path.join(dirpath, "model-symbol.json")
+download_url(url_symbol, symbol_filename)
 
 # load model from symbol and params
-sym, arg_params, aux_params = load_model(f_symbol_file_name, f_params_file_name)
+sym, arg_params, aux_params = load_model(symbol_file_name, params_file_name)

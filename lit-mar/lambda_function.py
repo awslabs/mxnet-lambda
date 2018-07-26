@@ -6,7 +6,13 @@ import os
 import json
 import subprocess
 
-import yaml
+class Context(object):
+    def __init__(self, logger, metrics_writter, request, response, system_info):
+        self.logger = logger
+        self.metrics_writter = metrics_writter
+        self.request = request
+        self.response = response
+        self.system_info = system_info
 
 
 class BaseResponse(object):
@@ -77,13 +83,15 @@ def lambda_handler(event, context):
         In the HTTP response to the invocation request, serialized into JSON.
     """
     # load config
-    config = yaml.load(open('config.yaml'))
+    with open('config.json', 'r') as file:
+        config = json.load(file)
     model_url = config["url_mar"]
     # download and unzip MAR
     urllib.urlretrieve(model_url, "/tmp/mar.zip")
     subprocess.call("unzip /tmp/mar.zip -d /tmp", shell=True)
     # change wd and make sure dir containing this file and MAR are both in PYTHONPATH
-    sys.path.insert(0, os.getcwd())
+    trigger_dir = os.getcwd()
+    sys.path.insert(0, trigger_dir)
     os.chdir("/tmp")
     sys.path.insert(0, os.getcwd())
     # read MANIFEST to get MAR handler
@@ -95,9 +103,8 @@ def lambda_handler(event, context):
 
     # prepare context object for MAR handler
     response = BaseResponse()
-    class Context(object):
-        pass
-    ctx = Context()
+    
+    ctx = Context(lambda : print, lambda : print, lambda : event.get("headers"), response, context)
     ctx.log = print
     ctx.add_metrics = print
     ctx.get_request_property = lambda x : context.get("headers").get(x)
@@ -105,10 +112,13 @@ def lambda_handler(event, context):
     ctx.add_response_property = response.add_response_property
     ctx.set_response_status = response.set_response_status
     # prepare data object for MAR handler
-    data = [[{"key": "data", "value": event}]]
+    data = [[{"key": "data", "value": event.get("body")}]]
 
     # trigger MAR handler and get response body
     output = inference(data, ctx)
     response.set_response_body(output)
+    
+    # reverse working dir to avoid config file not found
+    os.chdir(trigger_dir)
 
     return response.get_dict()

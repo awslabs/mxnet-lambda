@@ -6,7 +6,6 @@ import shutil
 import tempfile
 import subprocess
 import urllib
-import yaml
 
 
 def do_install(package_name, requirement=False, target='.'):
@@ -204,15 +203,12 @@ def use(model_archive, model_bucket):
     # unzip
     subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
     # install requirements
-    do_install('pyyaml', requirement=False, target='.')
     if check_existence('requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
     if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', '.') == False:
-        do_install('mxnet', requirement=False, target='.')
         # rollback numpy to 1.13 (avoid problems with the latest version)
-        if check_existence('numpy/', '.'):
-            shutil.rmtree('numpy/')
-            do_install('numpy==1.13.3', requirement=False, target='.')
+        do_install('numpy==1.13.3', requirement=False, target='.')
+        do_install('mxnet', requirement=False, target='.')
     # remove temp path
     shutil.rmtree(dirpath)
     if not is_url:
@@ -222,8 +218,8 @@ def use(model_archive, model_bucket):
             click.echo("Failed to upload model archive to S3.")
             return
         url_mar = "https://" + model_bucket + '.s3.amazonaws.com/' + model_archive.split('/')[-1]
-    with open('config.yaml', 'w') as outfile:
-        yaml.dump({"url_mar": str(url_mar)}, outfile, default_flow_style=False)
+    with open('config.json', 'w') as outfile:
+        json.dump({"url_mar": str(url_mar)}, outfile)
 
 
 cli.add_command(use)
