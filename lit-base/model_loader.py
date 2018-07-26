@@ -60,4 +60,4 @@ symbol_filename = os.path.join(dirpath, "model-symbol.json")
 download_url(url_symbol, symbol_filename)
 
 # load model from symbol and params
-sym, arg_params, aux_params = load_model(symbol_file_name, params_file_name)
+sym, arg_params, aux_params = load_model(symbol_filename, params_filename)
