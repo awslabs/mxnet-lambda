@@ -85,7 +85,7 @@ def postprocess(output):
         output from mx mod
     """
     # load labels from synset
-    download_url(config["url_synset"])
+    download_url(config["url_synset"], './synset.txt')
     with open('synset.txt', 'r') as file:
         labels = [line.rstrip() for line in file]
     # index label from synset
