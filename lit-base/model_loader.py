@@ -48,6 +48,7 @@ with open("config.json", "r") as file:
     config = json.load(file)
 url_params = config["url_params"]
 url_symbol = config["url_symbol"]
+url_synset = config["url_synset"]
 
 dirpath = tempfile.mkdtemp()
 
@@ -59,5 +60,14 @@ download_url(url_params, params_filename)
 symbol_filename = os.path.join(dirpath, "model-symbol.json")
 download_url(url_symbol, symbol_filename)
 
+# download synset
+synset_filename = os.path.join(dirpath, "synset.txt")
+download_url(url_synset, synset_filename)
+
 # load model from symbol and params
 sym, arg_params, aux_params = load_model(symbol_filename, params_filename)
+
+# load labels from synset
+with open('synset.txt', 'r') as file:
+    labels = [line.rstrip() for line in file]
+    
