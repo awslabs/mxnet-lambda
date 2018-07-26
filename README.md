@@ -55,7 +55,7 @@ Make sure your `ROLE_ARN` is in the format of `arn:aws:iam::<iam_account_number>
 ```
 aws lambda invoke \
 --invocation-type RequestResponse \
---function-name lit-demo \
+--function-name mxnet-lambda-demo \
 --region us-east-2 \
 --log-type Tail \
 --payload '{"url": "https://github.com/dmlc/web-data/blob/master/mxnet/doc/tutorials/python/predict_image/cat.jpg?raw=true"}' \
