@@ -190,7 +190,7 @@ def use(model_archive, model_bucket):
     # check weither it is url
     is_url = "://" in model_archive
     url_mar = None
-    if is_url and model_bucket==None:
+    if is_url==False and model_bucket==None:
         click.echo("Please specify S3 bucket for model storage")
         return
     # create a tmp path
