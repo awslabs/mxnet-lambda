@@ -4,7 +4,7 @@ import urllib2
 import numpy as np
 from PIL import Image
 
-from model_loader import config, sym, arg_params, aux_params, download_url
+from model_loader import sym, arg_params, aux_params, labels
 
 from collections import namedtuple
 from StringIO import StringIO
@@ -84,9 +84,5 @@ def postprocess(output):
     output : NDArray
         output from mx mod
     """
-    # load labels from synset
-    download_url(config["url_synset"], './synset.txt')
-    with open('synset.txt', 'r') as file:
-        labels = [line.rstrip() for line in file]
     # index label from synset
     return '{"category": "%s"}' % (labels[output])
