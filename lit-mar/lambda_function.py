@@ -9,6 +9,15 @@ import subprocess
 import yaml
 
 
+class Context(object):
+    def __init__(self, logger, metrics_writter, request, response, system_info):
+        self.logger = logger
+        self.metrics_writter = metrics_writter
+        self.request = request
+        self.response = response
+        self.system_info = system_info
+
+
 class BaseResponse(object):
     """BaseResponse if the object providing standard response attributes and operations"""
     def __init__(self, response_body=""):
@@ -95,9 +104,8 @@ def lambda_handler(event, context):
 
     # prepare context object for MAR handler
     response = BaseResponse()
-    class Context(object):
-        pass
-    ctx = Context()
+    
+    ctx = Context(lambda : print, lambda : print, lambda : event.get("headers"), response, context)
     ctx.log = print
     ctx.add_metrics = print
     ctx.get_request_property = lambda x : context.get("headers").get(x)
@@ -105,7 +113,7 @@ def lambda_handler(event, context):
     ctx.add_response_property = response.add_response_property
     ctx.set_response_status = response.set_response_status
     # prepare data object for MAR handler
-    data = [[{"key": "data", "value": event}]]
+    data = [[{"key": "data", "value": event.get("body")}]]
 
     # trigger MAR handler and get response body
     output = inference(data, ctx)
