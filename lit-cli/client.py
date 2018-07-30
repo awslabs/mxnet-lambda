@@ -95,7 +95,10 @@ def create(model_archive, model_bucket):
         url_mar = model_archive
         model_archive = os.path.join(dirpath, "tmp.mar")
     # unzip
-    subprocess.call(" ".join(["unzip", model_archive, "-d", dirpath]), shell=True)
+    status = subprocess.call(" ".join(["unzip", model_archive, "-d", dirpath]), shell=True)
+    if status != 0:
+        click.echo("Failed to unzip model archive. Interrupt.")
+        return
     # install requirements
     if check_existence('requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'requirements.txt'), requirement=True, target='.')
@@ -109,7 +112,7 @@ def create(model_archive, model_bucket):
         # upload model_archive
         status = subprocess.call(" ".join(["aws s3 cp", model_archive, "s3://", model_bucket, "--grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers"]), shell=True)
         if status != 0:
-            click.echo("Failed to upload model archive to S3.")
+            click.echo("Failed to upload model archive to S3. Interrupt.")
             return
         url_mar = "https://" + model_bucket + '.s3.amazonaws.com/' + model_archive.split('/')[-1]
     with open('config.json', 'w') as outfile:
