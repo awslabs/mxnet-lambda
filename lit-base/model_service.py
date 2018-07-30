@@ -26,13 +26,12 @@ def preprocess(event):
         if event.get('httpMethod') == 'GET':
             url = event['queryStringParameters']['url']
             # download image from url
-            img_file = tempfile.NamedTemporaryFile(delete=True)
-            if url:
-                req = urllib2.urlopen(url)
-                img_file.write(req.read())
-                img_file.flush()
-            img = Image.open(img_file.name)
-            img_file.close()
+            with tempfile.NamedTemporaryFile(delete=True) as img_file:
+                if url:
+                    req = urllib2.urlopen(url)
+                    img_file.write(req.read())
+                    img_file.flush()
+                img = Image.open(img_file.name)
         # POST method
         else:
             multipart_string = event['body'].decode('base64')
@@ -41,13 +40,12 @@ def preprocess(event):
         # direct invocation
         url = event['url']
         # download image from url
-        img_file = tempfile.NamedTemporaryFile(delete=True)
-        if url:
-            req = urllib2.urlopen(url)
-            img_file.write(req.read())
-            img_file.flush()
-        img = Image.open(img_file.name)
-        img_file.close()
+        with tempfile.NamedTemporaryFile(delete=True) as img_file:
+            if url:
+                req = urllib2.urlopen(url)
+                img_file.write(req.read())
+                img_file.flush()
+            img = Image.open(img_file.name)
     # prepare data
     img = img.resize((224, 224))
     img = mx.nd.array(img)
