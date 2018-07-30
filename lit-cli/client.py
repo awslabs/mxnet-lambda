@@ -5,6 +5,7 @@ import shutil
 import tempfile
 import subprocess
 import urllib
+import json
 
 
 def do_install(package_name, requirement=False, target='.'):
@@ -83,7 +84,7 @@ def create(model_archive, model_bucket):
     # check weither it is url
     is_url = "://" in model_archive
     url_mar = None
-    if is_url and model_bucket==None:
+    if is_url==False and model_bucket==None:
         click.echo("Please specify S3 bucket for model storage")
         return
     # create a tmp path
@@ -94,10 +95,10 @@ def create(model_archive, model_bucket):
         url_mar = model_archive
         model_archive = os.path.join(dirpath, "tmp.mar")
     # unzip
-    subprocess.call("unzip " + model_archive + " -d " + dirpath, shell=True)
+    subprocess.call(" ".join(["unzip", model_archive, "-d", dirpath]), shell=True)
     # install requirements
     if check_existence('requirements.txt', dirpath):
-        do_install(os.path.join(dirpath, 'requirements.txt'), requirements=True, target='.')
+        do_install(os.path.join(dirpath, 'requirements.txt'), requirement=True, target='.')
     if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', '.') == False:
         # rollback numpy to 1.13 (avoid problems with the latest version)
         do_install('numpy==1.13.3', requirement=False, target='.')
@@ -106,7 +107,7 @@ def create(model_archive, model_bucket):
     shutil.rmtree(dirpath)
     if not is_url:
         # upload model_archive
-        status = subprocess.call("aws s3 cp " + model_archive + " s3://" + model_bucket + " --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers", shell=True)
+        status = subprocess.call(" ".join(["aws s3 cp", model_archive, "s3://", model_bucket, "--grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers"]), shell=True)
         if status != 0:
             click.echo("Failed to upload model archive to S3.")
             return
