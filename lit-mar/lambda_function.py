@@ -85,7 +85,7 @@ def lambda_handler(event, context):
     # load config
     with open('config.json', 'r') as file:
         config = json.load(file)
-    model_url = config["url_mar"]
+    model_url = config["url_model_archive"]
     # download and unzip MAR
     urllib.urlretrieve(model_url, "/tmp/mar.zip")
     subprocess.call("unzip /tmp/mar.zip -d /tmp", shell=True)
