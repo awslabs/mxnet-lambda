@@ -28,7 +28,11 @@ def preprocess(event):
             # download image from url
             with tempfile.NamedTemporaryFile(delete=True) as img_file:
                 if url:
-                    req = urllib2.urlopen(url)
+                    try:
+                        req = urllib2.urlopen(url)
+                    except urllib2.URLError:
+                        time.sleep(0.01)
+                        req = urllib2.urlopen(url)
                     img_file.write(req.read())
                     img_file.flush()
                 img = Image.open(img_file.name)
@@ -42,7 +46,11 @@ def preprocess(event):
         # download image from url
         with tempfile.NamedTemporaryFile(delete=True) as img_file:
             if url:
-                req = urllib2.urlopen(url)
+                try:
+                    req = urllib2.urlopen(url)
+                except urllib2.URLError:
+                    time.sleep(0.01)
+                    req = urllib2.urlopen(url)
                 img_file.write(req.read())
                 img_file.flush()
             img = Image.open(img_file.name)
