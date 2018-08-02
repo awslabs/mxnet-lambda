@@ -4,7 +4,7 @@ import urllib2
 import numpy as np
 from PIL import Image
 
-from model_loader import sym, arg_params, aux_params
+from model_loader import sym, arg_params, aux_params, labels
 
 from collections import namedtuple
 from StringIO import StringIO
@@ -21,39 +21,21 @@ def preprocess(event):
         Lambda event
     """
     img = None
-    try:
-        # GET method
-        if event.get('httpMethod') == 'GET':
-            url = event['queryStringParameters']['url']
-            # download image from url
-            with tempfile.NamedTemporaryFile(delete=True) as img_file:
-                if url:
-                    try:
-                        req = urllib2.urlopen(url)
-                    except urllib2.URLError:
-                        time.sleep(0.01)
-                        req = urllib2.urlopen(url)
-                    img_file.write(req.read())
-                    img_file.flush()
-                img = Image.open(img_file.name)
-        # POST method
-        else:
-            multipart_string = event['body'].decode('base64')
-            img = Image.open(StringIO(multipart_string))
-    except KeyError:
-        # direct invocation
+    if event.has_key('url'):
+        # direct invocation, only used for testing
         url = event['url']
         # download image from url
-        with tempfile.NamedTemporaryFile(delete=True) as img_file:
-            if url:
-                try:
-                    req = urllib2.urlopen(url)
-                except urllib2.URLError:
-                    time.sleep(0.01)
-                    req = urllib2.urlopen(url)
-                img_file.write(req.read())
-                img_file.flush()
-            img = Image.open(img_file.name)
+        img_file = tempfile.NamedTemporaryFile(delete=True)
+        if url:
+            req = urllib2.urlopen(url)
+            img_file.write(req.read())
+            img_file.flush()
+        img = Image.open(img_file.name)
+        img_file.close()
+    else:
+        # POST method
+        multipart_string = event['body'].decode('base64')
+        img = Image.open(StringIO(multipart_string))
     # prepare data
     img = img.resize((224, 224))
     img = mx.nd.array(img)
@@ -90,8 +72,5 @@ def postprocess(output):
     output : NDArray
         output from mx mod
     """
-    # load labels from synset
-    with open('synset.txt', 'r') as file:
-        labels = [line.rstrip() for line in file]
     # index label from synset
     return '{"category": "%s"}' % (labels[output])
