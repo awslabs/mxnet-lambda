@@ -23,8 +23,8 @@ cd PACKAGE_NAME
 cp ../sam/* .
 ```
 
-## Configure Package (some files are in `sam/` folder)
-Update `model_service.py`, `model_url.py`, `template.yaml` )and/or `swagger.yaml`).
+## Configure Package
+Update `model_service.py`, `config.json`, `template.yaml` )and/or `swagger.yaml`).
 
 #### Model Service
 ```
@@ -37,9 +37,9 @@ postprocess(output) # postprocess the output to get the formatted response
 #### Model URL
 URL to the standard MXNet model description files (you may want to upload them to S3 if you don't have them online
 ```
-# model_url.py
-url_params = "https://PARAMS_URL"
-url_symbol = "https://SYMBOL_URL"
+# config.json
+"url_params" = "https://PARAMS_URL"
+"url_symbol" = "https://SYMBOL_URL"
 ```
 
 #### SAM Template
