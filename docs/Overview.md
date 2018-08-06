@@ -36,7 +36,7 @@ First models are trained and exported into model zoo, ONNX or saved as checkpoin
 
 MXNet Lambda has two major functions and four major components. Three major functions are **Consuming Model Archive on AWS Lambda and  Running Inference with Apache MXNet (incubating) on AWS Lambda.** These two major functions are supported by four major components: Model Archive Support Framework, Base Code for Running Inference on AWS Lambda, SAM Templates Support, and Utilities. 
 
-Model Archive support is a framework that supports consuming Model Archive formatted machine learning models on AWS Lambda. Base Code for Running Inference on AWS Lambda is a base package with decent modularization that runs a sample Lambda enabled inference task. SAM Templates Support is AWS Serverless Application Model descriptive code to significantly simplify the process of construct, maintain, test, deploy, and update a Lambda enabled inference package. Utilities provides scripts that help process Model Archives. 
+Model Archive support is a framework that supports consuming Model Archive formatted machine learning models on AWS Lambda. Base Code for Running Inference on AWS Lambda is a base package with decent modularization that runs a sample Lambda enabled inference task. SAM Templates is AWS Serverless Application Model descriptive support to significantly simplify the process of construct, maintain, test, deploy, and update a Lambda enabled inference package. Utilities provides scripts that help process Model Archives. 
 
 ## References
 
