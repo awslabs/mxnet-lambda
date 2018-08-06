@@ -24,7 +24,7 @@ Content-Length: 35
 {"category": "n02123159 tiger cat"}
 ```
 
-## Quickstart: SAM + MAR
+## Quickstart
 
 #### Prerequisites
 AWS CLI (https://aws.amazon.com/cli/) configured
@@ -41,30 +41,25 @@ In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 b
 aws s3 mb s3://<your-bucket-name> --region <your-bucket-region>
 ```
 
-#### Installation
-```
-git clone https://github.com/anchen1011/mxnet-lambda.git
-cd mxnet-lambda
-pip install lit-cli/
-```
-
 #### Create package
 ```
-cp -r lit-mar PACKAGE_NAME
-cd PACKAGE_NAME
+cp -r mar mxnet-lambda-demo
+cd mxnet-lambda-demo
 cp ../sam/* .
 ```
 
 #### [Optional] Configure Model Archive (only on Amazon Linux)
 If your model archive pack all requirements inside the MAR, modify `config.json` and then you are good.
 
-Otherwise, make sure to configure it with
+Otherwise, make sure to configure it with `scripts/configure.py`
 ```
-lit-cli use <MODEL_ARCHIVE> [--model-bucket <MODEL_BUCKET>]
+python configure.py model_archive lambda_function_path [model_bucket]
 ```
 e.g.
 ```
-lit-cli use https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/img_classification_exp.mar
+cd ../scripts
+lit-cli configure.py  https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/img_classification_exp.mar ../mxnet-lambda-demo
+cd -
 ```
 
 #### Deploy package
