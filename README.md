@@ -2,9 +2,9 @@
 
 ## Introduction
 
-MXNet Lambda provides a toolkit for testing, deploying and serving deep learning models using MXNet using a serverless approach.
+MXNet Lambda provides a toolkit for testing, deploying and serving deep learning models using Apache MXNet (incubating) using a serverless approach.
 
-It is built on MXNet and AWS Lambda, but could also deploy models developed with other frameworks that support ONNX (PyTorch, CNTK, Caffe2, etc.). It provides a charge-by-query solution for AWS customers who host/use AI applications, with reasonable performance and effortless and limitless scalability. 
+It is built on Apache MXNet (incubating) and AWS Lambda, but could also deploy models developed with other frameworks that support ONNX (PyTorch, CNTK, Caffe2, etc.). It provides a charge-by-query solution for AWS customers who host/use AI applications, with reasonable performance and effortless and limitless scalability. 
 
 ## Documentation
 
