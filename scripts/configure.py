@@ -31,17 +31,30 @@ def do_install(package_name, requirement=False, target='.'):
         main(['install', '-r', package_name, '-t', target])
 
 
-def download_url(url, target):
-    """Download online file
-
+def download_url(url, target, retries=2, base_retry_interval=0.01):
+    """Download url to a file.
     Parameters
     ----------
     url: string
         url to the file to download
     target: string
         the target local path of the downloaded file
+    retries: int
+        the max number of retries allowed for urlretrieve
     """
-    urllib.urlretrieve(url, target)
+    assert retries >= 1, "Number of retries should be at least 1"
+
+    retry = 0
+    while retry < retries:
+        try:
+            urllib.urlretrieve(url, target)
+            return
+        except Exception as e:
+            retry += 1
+            if retry < retries: 
+                time.sleep(2 ** retries * base_retry_interval)
+            else:
+                raise e
 
 
 def check_existence(filename, path):
