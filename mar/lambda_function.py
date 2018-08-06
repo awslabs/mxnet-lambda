@@ -131,15 +131,9 @@ def lambda_handler(event, context):
     inference = getattr(handler, function_name)
 
     # prepare context object for MAR handler
-    response = BaseResponse()
-    
+    response = BaseResponse()    
     ctx = Context(lambda : print, lambda : print, lambda : event.get("headers"), response, context)
-    ctx.log = print
-    ctx.add_metrics = print
-    ctx.get_request_property = lambda x : context.get("headers").get(x)
-    ctx.get_system_info = lambda : context
-    ctx.add_response_property = response.add_response_property
-    ctx.set_response_status = response.set_response_status
+
     # prepare data object for MAR handler
     data = [[{"key": "data", "value": event.get("body")}]]
 
