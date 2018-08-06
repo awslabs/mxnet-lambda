@@ -110,6 +110,6 @@ aws cloudformation describe-stacks --stack-name <STACK_NAME> | python -c 'import
 #### Test with POST request
 
 ```
-curl -O https://github.com/anchen1011/mxnet-lambda/blob/lit-docs/docs/cat.png?raw=true
+curl -O https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/cat.png
 curl -H "Content-Type: image/png" -X POST https://MY_URL -T "cat.png"
 ```
