@@ -18,7 +18,7 @@ aws s3 mb s3://<your-bucket-name>
 ## Create Package
 Copy the `base` template and `sam` template to get started.
 ```
-cp -r `base` PACKAGE_NAME
+cp -r base PACKAGE_NAME
 cd PACKAGE_NAME
 cp ../sam/* .
 ```
