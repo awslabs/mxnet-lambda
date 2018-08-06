@@ -12,11 +12,11 @@ It is built on MXNet and AWS Lambda, but could also deploy models developed with
 
 ## Demo
 ```
-curl -i -H "Content-Type: application/json" -X GET 'https://1hlvxxnt2e.execute-api.us-east-2.amazonaws.com/init/lit-demo?url=https://github.com/dmlc/web-data/blob/master/mxnet/doc/tutorials/python/predict_image/cat.jpg?raw=true'
+curl -i -H "Content-Type: application/json" -X GET 'https://1hlvxxnt2e.execute-api.us-east-2.amazonaws.com/init/lit-demo?url=https://github.com/anchen1011/mxnet-lambda/blob/lit-docs/docs/cat.png?raw=true'
 ```
 If you don't have curl handy, you can either find it here https://curl.haxx.se, or just copy and paste the full link inside single quote into your browser.
 
-![image to infer](https://raw.githubusercontent.com/dmlc/web-data/master/mxnet/doc/tutorials/python/predict_image/cat.jpg)
+![image to infer](https://github.com/anchen1011/mxnet-lambda/blob/lit-docs/docs/cat.png)
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -110,6 +110,6 @@ aws cloudformation describe-stacks --stack-name <STACK_NAME> | python -c 'import
 #### Test with POST request
 
 ```
-curl -O https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/cat.png
+curl -O https://github.com/anchen1011/mxnet-lambda/blob/lit-docs/docs/cat.png?raw=true
 curl -H "Content-Type: image/png" -X POST https://MY_URL -T "cat.png"
 ```
