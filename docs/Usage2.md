@@ -63,7 +63,7 @@ uri: arn:aws:apigateway:<<region>>:lambda:path/2015-03-31/functions/arn:aws:lamb
 DefinitionUri: path/to/swagger.yaml
 ```
 
-## Install Dependency
+## Install Dependency (only on Amazon Linux)
 Install Python dependencies specified by `requirements.txt`
 ```
 pip install -r requirements.txt -t .
