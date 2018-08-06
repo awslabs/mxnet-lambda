@@ -30,7 +30,7 @@ Update `config.json`, `template.yaml` )and/or `swagger.yaml`).
 URL to the standard MXNet model description files (you may want to upload them to S3 if you don't have them online
 ```
 # config.json
-url_model_archive = "https://MODEL_ARCHIVE_URL"
+"url_model_archive" = "https://MODEL_ARCHIVE_URL"
 ```
 
 #### SAM Template
