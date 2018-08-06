@@ -44,7 +44,7 @@ def download_url(url, target, retries=2, base_retry_interval=0.01):
     retries: int
         the max number of retries allowed for urlretrieve
     """
-    assert retries >= 0, "Number of retries should be at least 0"
+    assert retries >= 1, "Number of retries should be at least 1"
 
     retry = 0
     while retry < retries:
