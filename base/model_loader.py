@@ -33,7 +33,7 @@ def load_model(symbol_filename, params_filename):
 
 
 def download_url(url, target, retries=2, base_retry_interval=0.01):
-    """Download online file
+    """Download url to a file.
 
     Parameters
     ----------
