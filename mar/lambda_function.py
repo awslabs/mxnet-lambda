@@ -91,7 +91,6 @@ def download_url(url, target, retries=2, base_retry_interval=0.01):
                 time.sleep(2 ** retries * base_retry_interval)
             else:
                 raise e
-    
 
 
 def lambda_handler(event, context):
