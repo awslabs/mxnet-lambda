@@ -41,13 +41,6 @@ In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 b
 aws s3 mb s3://<your-bucket-name> --region <your-bucket-region>
 ```
 
-#### Installation
-```
-git clone https://github.com/anchen1011/mxnet-lambda.git
-cd mxnet-lambda
-pip install lit-cli/
-```
-
 #### Create package
 ```
 cp -r lit-mar PACKAGE_NAME
