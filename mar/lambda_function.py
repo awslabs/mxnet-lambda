@@ -67,6 +67,33 @@ class BaseResponse(object):
         self.body = response_body
 
 
+def download_url(url, target, retries=2, base_retry_interval=0.01):
+    """Download url to a file.
+    Parameters
+    ----------
+    url: string
+        url to the file to download
+    target: string
+        the target local path of the downloaded file
+    retries: int
+        the max number of retries allowed for urlretrieve
+    """
+    assert retries >= 0, "Number of retries should be at least 0"
+
+    retry = 0
+    while retry < retries:
+        try:
+            urllib.urlretrieve(url, target)
+            return
+        except Exception as e:
+            retry += 1
+            if retry < retries: 
+                time.sleep(2 ** retries * base_retry_interval)
+            else:
+                raise e
+    
+
+
 def lambda_handler(event, context):
     """Calculate the outputs specified by the bound symbol.
 
@@ -87,8 +114,11 @@ def lambda_handler(event, context):
         config = json.load(file)
     model_url = config["url_model_archive"]
     # download and unzip MAR
-    urllib.urlretrieve(model_url, "/tmp/mar.zip")
-    subprocess.call("unzip /tmp/mar.zip -d /tmp", shell=True)
+    mar_name = model_url.split('/')[-1]
+    download_url(model_url, "/tmp/" + mar_name)
+    status = subprocess.call(" ".join(["unzip", "/tmp/" + mar_name, "-d", "/tmp"]), shell=True)
+    if status != 0:
+        raise Exception('Failed to unzip model archive')
     # change wd and make sure dir containing this file and MAR are both in PYTHONPATH
     trigger_dir = os.getcwd()
     sys.path.insert(0, trigger_dir)
@@ -122,3 +152,4 @@ def lambda_handler(event, context):
     os.chdir(trigger_dir)
 
     return response.get_dict()
+
