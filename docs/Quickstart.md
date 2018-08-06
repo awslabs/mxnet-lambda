@@ -1,19 +1,43 @@
-* In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 bucket in which SAM can create the deployment artifacts.
+## Quickstart
 
-Else create a new bucket using the following AWS CLI command:
+#### Prerequisites
+AWS CLI (https://aws.amazon.com/cli/) configured
+
+AWS IAM ARN (https://docs.aws.amazon.com/IAM/latest/UserGuide//id_roles.html) setup
+
+Python 2.7 (https://www.python.org/download/releases/2.7/) with `pip`
+
+In the AWS Region you plan to deploy, make sure you have an existing Amazon S3 bucket in which SAM can create the deployment artifacts.
+
+* Else create a new bucket using the following AWS CLI command:
 
 ```
 aws s3 mb s3://<your-bucket-name> --region <your-bucket-region>
 ```
 
-- First copy the lit-base template and SAM templates to get started.
+#### Create package
 ```
-cp -r lit-base PACKAGE_NAME
-cd PACKAGE_NAME
+cp -r mar mxnet-lambda-demo
+cd mxnet-lambda-demo
 cp ../sam/* .
 ```
 
-- Before deploying the project to SAM for the first time, you'll need to update some variables in `template.yaml`/`swagger.yaml` (found in `sam/` folder).
+#### [Optional] Configure Model Archive (only on Amazon Linux)
+If your model archive pack all requirements inside the MAR, modify `config.json` and then you are good.
+
+Otherwise, make sure to configure it with `scripts/configure.py`
+```
+python configure.py model_archive lambda_function_path [model_bucket]
+```
+e.g.
+```
+cd ../scripts
+lit-cli configure.py  https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/img_classification_exp.mar ../mxnet-lambda-demo
+cd -
+```
+
+#### Deploy package
+- Before deploying the project to SAM for the first time, you'll need to update some variables in `template.yaml`/`swagger.yaml`
 
 ```
 # swagger.yaml
@@ -35,12 +59,12 @@ zip -r9 lambda_function.zip *
 
 ```
 aws cloudformation package \
---template-file <path-to-file>/template.yaml \
---output-template-file <path-to-file>/template-out.yaml \
+--template-file ./template.yaml \
+--output-template-file ./template-out.yaml \
 --s3-bucket <your-s3-bucket-name>
 
 aws cloudformation deploy \
---template-file <path-to-file>/template-out.yaml \
+--template-file ./template-out.yaml \
 --stack-name <STACK_NAME> \
 --capabilities CAPABILITY_IAM
 ```
@@ -52,9 +76,9 @@ aws cloudformation deploy \
 aws cloudformation describe-stacks --stack-name <STACK_NAME> | python -c 'import json,sys;obj=json.load(sys.stdin);print obj["Stacks"][0]["Outputs"][0]["OutputValue"];'
 ```
 
-- Test with POST request
+#### Test with POST request
 
 ```
-wget https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/cat.png
+curl -O https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/cat.png
 curl -H "Content-Type: image/png" -X POST https://MY_URL -T "cat.png"
 ```
