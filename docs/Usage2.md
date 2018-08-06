@@ -16,10 +16,11 @@ aws s3 mb s3://<your-bucket-name>
 [SAM Documentation](https://github.com/awslabs/serverless-application-model/blob/master/HOWTO.md)
 
 ## Create Package
-Copy the `base` template to get started.
+Copy the `base` template and `sam` template to get started.
 ```
 cp -r `base` PACKAGE_NAME
 cd PACKAGE_NAME
+cp ../sam/* .
 ```
 
 ## Configure Package (some files are in `sam/` folder)
@@ -62,6 +63,16 @@ uri: arn:aws:apigateway:<<region>>:lambda:path/2015-03-31/functions/arn:aws:lamb
 DefinitionUri: path/to/swagger.yaml
 ```
 
+## Install Dependency
+Install Python dependencies specified by `requirements.txt`
+```
+pip install -r requirements.txt -t .
+```
+or install Python dependencies specified by PACKAGE_NAME
+```
+pip install PACKAGE_NAME -t .
+```
+
 ## Deploy Package
 ```
 aws cloudformation package \
@@ -77,11 +88,3 @@ aws cloudformation deploy \
 
 ## Update Package
 Same as deploy. [Versioning is supported by SAM](https://github.com/awslabs/serverless-application-model/releases/tag/1.3.0).
-
-## Install Dependency
-Install Python dependencies specified by PACKAGE_NAME
-
-This doesn't work with non-Python dependencies (MXNet, OpenCV, ...)
-```
-pip install PACKAGE_NAME -t .
-```
