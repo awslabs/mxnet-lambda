@@ -5,15 +5,11 @@ Lambda Inference Toolkit
   - [Discussion](Discussion.md)
 
 - Get Started
-  - [Installation](Installation.md) (come in next PR)
-  - [Quickstart with SAM](SAM-Quickstart.md)
-  - [Quickstart with CLI](CLI-Quickstart.md) (come in next PR)
+  - [Quickstart](Quickstart.md)
 
 - Usage Documentation
-  - [SAM Usage](SAM-Usage.md)
-  - [CLI Usage](CLI-Usage.md) (come in next PR)
+  - [Use Model Archive](Usage.md)
+  - [Use Symbols and Params](Usage2.md)
 
 - Advanced
-  - [Build MXNet](Build-MXNet.md) (come in next PR)
-  - [Use OpenCV](Use-OpenCV.md) (come in next PR)
-  - [Keep it Warm](Keep-it-Warm.md) (come in next PR)
+  - [Keep it Warm](Keep-it-Warm.md)
