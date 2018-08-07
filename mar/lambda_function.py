@@ -69,6 +69,7 @@ class BaseResponse(object):
 
 def download_url(url, target, retries=2, base_retry_interval=0.01):
     """Download url to a file.
+    
     Parameters
     ----------
     url: string
@@ -93,20 +94,8 @@ def download_url(url, target, retries=2, base_retry_interval=0.01):
                 raise e
 
 
-def lambda_handler(event, context):
-    """Calculate the outputs specified by the bound symbol.
-
-    Parameters
-    ----------
-    event: dict, list, str, int, float, or NoneType 
-        AWS Lambda uses this parameter to pass in event data to the handler. 
-    context: LambdaContext
-        AWS Lambda uses this parameter to provide runtime information to your handler. 
-
-    Returns
-    -------
-    response_dict: Returns the response of lambda_handler in dict.
-        In the HTTP response to the invocation request, serialized into JSON.
+def get_model_archive():
+    """Download model archive and configure the system path
     """
     # load config
     with open('config.json', 'r') as file:
@@ -123,12 +112,44 @@ def lambda_handler(event, context):
     sys.path.insert(0, trigger_dir)
     os.chdir("/tmp")
     sys.path.insert(0, os.getcwd())
-    # read MANIFEST to get MAR handler
+
+
+def get_inference_hanlder():
+    """read MANIFEST to get MAR handler
+    
+    Return
+    ----------
+    inference: function
+        The inference handler
+    """
     with open('MANIFEST.json') as f:
         manifest = json.load(f)
     module_name, function_name = manifest["model"]["handler"].split(":")
     handler = __import__(module_name)
     inference = getattr(handler, function_name)
+    return inference
+
+
+def lambda_handler(event, context):
+    """Calculate the outputs specified by the bound symbol.
+
+    Parameters
+    ----------
+    event: dict, list, str, int, float, or NoneType 
+        AWS Lambda uses this parameter to pass in event data to the handler. 
+    context: LambdaContext
+        AWS Lambda uses this parameter to provide runtime information to your handler. 
+
+    Returns
+    -------
+    response_dict: Returns the response of lambda_handler in dict.
+        In the HTTP response to the invocation request, serialized into JSON.
+    """
+    # get model archive 
+    get_model_archive()
+    
+    # get inference handler
+    inference = get_inference_hanlder()
 
     # prepare context object for MAR handler
     response = BaseResponse()    
