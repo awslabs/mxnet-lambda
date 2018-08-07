@@ -2,6 +2,3 @@ output_file
 *.zip
 __pycache__
 *.pyc
-.DS_Store
-.idea
-lit_cli.egg-info

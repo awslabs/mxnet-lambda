@@ -1,0 +1,47 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MXNet Lambda Function
+Outputs:
+  ApiUrl:
+    Description: URL of your API endpoint
+    Value:
+      Fn::Join:
+      - ''
+      - - https://
+        - Ref: ApiGatewayApi
+        - .execute-api.
+        - Ref: AWS::Region
+        - .amazonaws.com/prod
+Resources:
+  ApiGatewayApi:
+    Properties:
+      DefinitionUri: s3://smallya-testw/samtest/swagger.yaml
+      StageName: prod
+      Variables:
+        LambdaFunctionName:
+          Ref: LambdaFunction
+    Type: AWS::Serverless::Api
+  LambdaFunction:
+    Properties:
+      CodeUri: s3://smallya-testw/samtest/mxnet_lambda_code.zip
+      Description: MXNet Lambda Function
+      Events:
+        ProxyApiGreedy:
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
+            RestApiId:
+              Ref: ApiGatewayApi
+          Type: Api
+        ProxyApiRoot:
+          Properties:
+            Method: ANY
+            Path: /
+            RestApiId:
+              Ref: ApiGatewayApi
+          Type: Api
+      Handler: lambda_function.lambda_handler
+      MemorySize: 1536
+      Runtime: python2.7
+      Timeout: 60
+    Type: AWS::Serverless::Function
+Transform: AWS::Serverless-2016-10-31
