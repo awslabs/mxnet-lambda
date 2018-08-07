@@ -7,7 +7,23 @@ import json
 import subprocess
 
 class Context(object):
+    """Context provides runtime information to Model Archive handler specified in MANIFEST"""
     def __init__(self, logger, metrics_writter, request, response, system_info):
+        """Constructor, construct a context
+
+        Parameters
+        ----------
+        logger: object
+            Model archive user can use logger to write log 
+        metrics_writter: object 
+            Model archive user can use metrics writter to collect  metrics
+        request: object
+            Model archive user can use request to access request properties
+        response: object
+            Model archive user can use response to write response properties
+        system_info: object
+            Model archive user can use system_info to access system information properties
+        """
         self.logger = logger
         self.metrics_writter = metrics_writter
         self.request = request
