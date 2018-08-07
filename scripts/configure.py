@@ -109,7 +109,7 @@ def configure(model_archive, lambda_function_path, model_bucket=None):
     if check_existence('MAR-INF/requirements.txt', dirpath):
         do_install(os.path.join(dirpath, 'MAR-INF/requirements.txt'), requirement=True, target=lambda_function_path)
     if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', lambda_function_path) == False:
-        # rollback numpy to 1.13 (avoid problems with the latest version)
+        # rollback numpy to 1.13 (avoid problems with the latest version's conflict with mxnet on lambda)
         do_install('numpy==1.13.3', requirement=False, target=lambda_function_path)
         do_install('mxnet', requirement=False, target=lambda_function_path)
     # remove temp path
