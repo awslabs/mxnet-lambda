@@ -21,13 +21,13 @@ Other Features:
 
 ## Other Useful Services
 
-[Sagemaker](https://aws.amazon.com/cn/sagemaker/) is a stable AWS official tool to Build, train, and deploy machine learning models at scale. 
+[Amazon Sagemaker](https://aws.amazon.com/sagemaker/) is a fully-managed platform that enables developers and data scientists to quickly and easily build, train, and deploy machine learning models at any scale.. 
 
-[SAM-CLI](https://github.com/awslabs/aws-sam-cli) is a stable AWS Labs official tool that manages Serverless applications written with AWS Serverless Application Model (SAM). SAM CLI can be used to test functions locally, start a local API Gateway from a SAM template, validate a SAM template, fetch logs, generate sample payloads for various event sources, and generate a SAM project in your favorite Lambda Runtime.
+[AWS SAM-CLI](https://github.com/awslabs/aws-sam-cli) is the AWS CLI tool for managing Serverless applications written with AWS Serverless Application Model (SAM). SAM CLI can be used to test functions locally, start a local API Gateway from a SAM template, validate a SAM template, fetch logs, generate sample payloads for various event sources, and generate a SAM project in your favorite Lambda Runtime.
 
-[MMS](https://github.com/awslabs/mxnet-model-server) is an AWS Labs official tool that serves deep learning models exported from MXNet or the Open Neural Network Exchange (ONNX).
+[Apache MXNet Model Server](https://github.com/awslabs/mxnet-model-server) (MMS) is a flexible and easy to use tool for serving deep learning models exported from [Apache MXNet](http://mxnet.apache.org/) or the Open Neural Network Exchange ([ONNX](http://onnx.ai/)).
 
-All these tools are very amazing, and we are not trying to reinvent the wheel. We support packing, deploying and serving machine learning models in a serverless manner. We don't support training, deploying with server or local Lambda testing. 
+All these tools are very amazing, and we are not trying to reinvent the wheel. MXNet-lambda supports packaging, deploying and serving machine learning models in a serverless manner. We don't support training, deploying with server or local Lambda testing. 
 
 For training, please check out Sagemaker. For deploying / model serving, both Sagemaker and MMS are very good resources. For local Lambda testing, SAM-CLI it is highly recommended. 
 
