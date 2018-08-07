@@ -96,6 +96,12 @@ def download_url(url, target, retries=2, base_retry_interval=0.01):
 
 def get_model_archive():
     """Download model archive and configure the system path
+
+    Return
+    ----------
+    trigger_dir: string
+        The path to the location where the lambda funciton 
+        is triggered before the wd is configured by this function
     """
     # load config
     with open('config.json', 'r') as file:
@@ -112,6 +118,7 @@ def get_model_archive():
     sys.path.insert(0, trigger_dir)
     os.chdir("/tmp")
     sys.path.insert(0, os.getcwd())
+    return trigger_dir
 
 
 def get_inference_hanlder():
@@ -146,7 +153,7 @@ def lambda_handler(event, context):
         In the HTTP response to the invocation request, serialized into JSON.
     """
     # get model archive 
-    get_model_archive()
+    trigger_dir = get_model_archive()
     
     # get inference handler
     inference = get_inference_hanlder()
