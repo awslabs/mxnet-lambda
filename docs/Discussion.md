@@ -12,7 +12,7 @@ Cons:
 
 1. GPU not yet available
 2. 512 MB /tmp limit
-3. Slow startup if not frequently used (we can alternatively [keep instance warm](https://github.com/anchen1011/lambda-inference-toolkit/wiki/Keep-it-Warm))
+3. Slow startup if not frequently used (we can alternatively [keep instance warm](docs/Keep-it-Warm.md)
 4. Potentially bottlenecked by speed of fetching and loading if the model file is large
 
 Other Features:
