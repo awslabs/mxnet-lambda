@@ -1,3 +1,5 @@
+#!/usr/bin/env python 
+
 import os
 import shutil
 import tempfile
@@ -74,7 +76,7 @@ def check_existence(filename, path):
     Examples
     ----------
     >>> check_existence('mxnet/', lambda_function_path)
-    >>> check_existence('MAR-INF/requirements.txt', lambda_function_path)
+    >>> check_existence(requirements_path, lambda_function_path)
     """
     return os.path.exists(os.path.join(path, filename))
 
@@ -89,6 +91,9 @@ def configure(model_archive, lambda_function_path, model_bucket=None):
     model_bucket: string
         optional S3 bucket name to upload local model archive file
     """
+    mxnet_dependency_path = 'mxnet/'
+    requirements_path = 'MAR-INF/requirements.txt'
+
     # check weither it is url
     is_url = "://" in model_archive
     url_mar = None
@@ -106,9 +111,9 @@ def configure(model_archive, lambda_function_path, model_bucket=None):
     if status != 0:
         raise Exception("Failed to unzip model archive. Interrupt.")
     # install requirements
-    if check_existence('MAR-INF/requirements.txt', dirpath):
-        do_install(os.path.join(dirpath, 'MAR-INF/requirements.txt'), requirement=True, target=lambda_function_path)
-    if check_existence('mxnet/', dirpath) == False and check_existence('mxnet/', lambda_function_path) == False:
+    if check_existence(requirements_path, dirpath):
+        do_install(os.path.join(dirpath, requirements_path), requirement=True, target=lambda_function_path)
+    if check_existence(mxnet_dependency_path, dirpath) == False and check_existence(mxnet_dependency_path, lambda_function_path) == False:
         # rollback numpy to 1.13 (avoid problems with the latest version's conflict with mxnet on lambda)
         do_install('numpy==1.13.3', requirement=False, target=lambda_function_path)
         do_install('mxnet', requirement=False, target=lambda_function_path)
