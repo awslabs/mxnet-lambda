@@ -121,20 +121,21 @@ def configure(model_archive, lambda_function_path, model_bucket=None):
     shutil.rmtree(dirpath)
     if not is_url:
         # upload model_archive
-        status = subprocess.call(" ".join(["aws s3 cp", model_archive, "s3://", model_bucket, "--grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers"]), shell=True)
+        cmd = " ".join(["aws s3 cp", model_archive, "s3://" + model_bucket, "--grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers"])
+        status = subprocess.call(cmd, shell=True)
         if status != 0:
             raise Exception("Failed to upload model archive to S3. Interrupt.")
         url_mar = "https://" + model_bucket + '.s3.amazonaws.com/' + model_archive.split('/')[-1]
-    with open('config.json', 'w') as outfile:
+    with open(os.path.join(lambda_function_path, 'config.json'), 'w') as outfile:
         json.dump({"url_mar": str(url_mar)}, outfile)
 
 
 if __name__ == "__main__":
     model_archive = sys.argv[1]
     lambda_function_path = sys.argv[2]
-    if len(sys.argv == 4):
+    if len(sys.argv) == 4:
         model_bucket = sys.argv[3]
-    elif len(sys.argv == 3):
+    elif len(sys.argv) == 3:
         model_bucket = None
     else:
         raise Exception("Expected model_archive lambda_function_path [model_bucket] as arguements")
