@@ -8,8 +8,8 @@ Lambda Inference Toolkit
   - [Quickstart](Quickstart.md)
 
 - Usage Documentation
-  - [Use Model Archive](Usage.md)
-  - [Use Symbols and Params](Usage2.md)
+  - [Directly Use Model Archive](Usage.md)
+  - [Build Lambda Function with Symbols and Params](Usage2.md)
 
 - Advanced
   - [Keep it Warm](Keep-it-Warm.md)
