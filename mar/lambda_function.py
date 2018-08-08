@@ -176,7 +176,7 @@ def lambda_handler(event, context):
 
     # prepare context object for MAR handler
     response = BaseResponse()    
-    ctx = Context(lambda : print, lambda : print, lambda : event.get("headers"), response, context)
+    ctx = Context(lambda : print, lambda : print, event.get("headers"), response, context)
 
     # prepare data object for MAR handler
     data = [[{"key": "data", "value": event.get("body")}]]
