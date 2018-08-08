@@ -67,6 +67,7 @@ cd ../scripts
 lit-cli configure.py  https://s3.us-east-2.amazonaws.com/baiachen-amazon-ai-work-data/img_classification_exp.mar ../mxnet-lambda-demo
 cd -
 ```
+*If you want to use private S3 bucket/object, make sure to add permission in your Lambda Function execution role specified in your `template.yaml`*
 
 ## Deploy Package
 ```
