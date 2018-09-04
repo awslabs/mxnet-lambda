@@ -36,7 +36,7 @@ from numpy.testing import (
     )
 
 # Need to test an object that does not fully implement math interface
-from datetime import timedelta, datetime
+from datetime import timedelta
 
 
 if sys.version_info[:2] > (3, 2):
@@ -1476,21 +1476,6 @@ class TestMethods(TestCase):
             arr = np.empty(1000, dt)
             arr[::-1].sort()
 
-    def test_sort_raises(self):
-        #gh-9404
-        arr = np.array([0, datetime.now(), 1], dtype=object)
-        for kind in ['q', 'm', 'h']:
-            assert_raises(TypeError, arr.sort, kind=kind)
-        #gh-3879 
-        class Raiser(object):
-            def raises_anything(*args, **kwargs):
-                raise TypeError("SOMETHING ERRORED")
-            __eq__ = __ne__ = __lt__ = __gt__ = __ge__ = __le__ = raises_anything
-        arr = np.array([[Raiser(), n] for n in range(10)]).reshape(-1)
-        np.random.shuffle(arr)
-        for kind in ['q', 'm', 'h']:
-            assert_raises(TypeError, arr.sort, kind=kind)
-
     def test_sort_degraded(self):
         # test degraded dataset would take minutes to run with normal qsort
         d = np.arange(1000000)
@@ -2494,17 +2479,6 @@ class TestMethods(TestCase):
         if HAS_REFCOUNT:
             assert_(sys.getrefcount(a) < 50)
 
-    def test_size_zero_memleak(self):
-        # Regression test for issue 9615
-        # Exercises a special-case code path for dot products of length
-        # zero in cblasfuncs (making it is specific to floating dtypes).
-        a = np.array([], dtype=np.float64)
-        x = np.array(2.0)
-        for _ in range(100):
-            np.dot(a, a, out=x)
-        if HAS_REFCOUNT:
-            assert_(sys.getrefcount(x) < 50)
-
     def test_trace(self):
         a = np.arange(12).reshape((3, 4))
         assert_equal(a.trace(), 15)
@@ -2788,10 +2762,6 @@ class TestMethods(TestCase):
         e = np.array(['1+1j'], 'U')
         assert_raises(TypeError, complex, e)
 
-class TestCequenceMethods(object):
-    def test_array_contains(self):
-        assert_(4.0 in np.arange(16.).reshape(4,4))
-        assert_(20.0 not in np.arange(16.).reshape(4,4))
 
 class TestBinop(object):
     def test_inplace(self):
@@ -3201,26 +3171,6 @@ class TestTemporaryElide(TestCase):
         # check inplace op does not create ndarray from scalars
         a = np.bool_()
         assert_(type(~(a & a)) is np.bool_)
-
-    def test_elide_scalar_readonly(self):
-        # The imaginary part of a real array is readonly. This needs to go
-        # through fast_scalar_power which is only called for powers of
-        # +1, -1, 0, 0.5, and 2, so use 2. Also need valid refcount for
-        # elision which can be gotten for the imaginary part of a real
-        # array. Should not error.
-        a = np.empty(100000, dtype=np.float64)
-        a.imag ** 2
-
-    def test_elide_readonly(self):
-        # don't try to elide readonly temporaries
-        r = np.asarray(np.broadcast_to(np.zeros(1), 100000).flat) * 0.0
-        assert_equal(r, 0)
-
-    def test_elide_updateifcopy(self):
-        a = np.ones(2**20)[::2]
-        b = a.flat.__array__() + 1
-        del b
-        assert_equal(a, 1)
 
 
 class TestCAPI(TestCase):
@@ -4352,18 +4302,6 @@ class TestResize(TestCase):
         assert_array_equal(x, np.eye(3))
         x.resize()
         assert_array_equal(x, np.eye(3))
-
-    def test_0d_shape(self):
-        # to it multiple times to test it does not break alloc cache gh-9216
-        for i in range(10):
-            x = np.empty((1,))
-            x.resize(())
-            assert_equal(x.shape, ())
-            assert_equal(x.size, 1)
-            x = np.empty(())
-            x.resize((1,))
-            assert_equal(x.shape, (1,))
-            assert_equal(x.size, 1)
 
     def test_invalid_arguments(self):
         self.assertRaises(TypeError, np.eye(3).resize, 'hi')
@@ -6691,17 +6629,6 @@ class TestWhere(TestCase):
         ibad = np.vstack(np.where(x == 99.))
         assert_array_equal(ibad,
                            np.atleast_2d(np.array([[],[]], dtype=np.intp)))
-
-    def test_largedim(self):
-        # invalid read regression gh-9304
-        shape = [10, 2, 3, 4, 5, 6]
-        np.random.seed(2)
-        array = np.random.rand(*shape)
-
-        for i in range(10):
-            benchmark = array.nonzero()
-            result = array.nonzero()
-            assert_array_equal(benchmark, result)
 
 
 if not IS_PYPY:

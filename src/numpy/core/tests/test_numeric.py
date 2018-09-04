@@ -1020,10 +1020,6 @@ class TestNonzero(TestCase):
         # either integer or tuple arguments for axis
         msg = "Mismatch for dtype: %s"
 
-        def assert_equal_w_dt(a, b, err_msg):
-            assert_equal(a.dtype, b.dtype, err_msg=err_msg)
-            assert_equal(a, b, err_msg=err_msg)
-
         for dt in np.typecodes['All']:
             err_msg = msg % (np.dtype(dt).name,)
 
@@ -1043,13 +1039,13 @@ class TestNonzero(TestCase):
                     m[1, 0] = '1970-01-12'
                     m = m.astype(dt)
 
-                expected = np.array([2, 0, 0], dtype=np.intp)
-                assert_equal_w_dt(np.count_nonzero(m, axis=0),
-                                  expected, err_msg=err_msg)
+                expected = np.array([2, 0, 0])
+                assert_equal(np.count_nonzero(m, axis=0),
+                             expected, err_msg=err_msg)
 
-                expected = np.array([1, 1, 0], dtype=np.intp)
-                assert_equal_w_dt(np.count_nonzero(m, axis=1),
-                                  expected, err_msg=err_msg)
+                expected = np.array([1, 1, 0])
+                assert_equal(np.count_nonzero(m, axis=1),
+                             expected, err_msg=err_msg)
 
                 expected = np.array(2)
                 assert_equal(np.count_nonzero(m, axis=(0, 1)),
@@ -1064,13 +1060,13 @@ class TestNonzero(TestCase):
                 # setup is slightly different for this dtype
                 m = np.array([np.void(1)] * 6).reshape((2, 3))
 
-                expected = np.array([0, 0, 0], dtype=np.intp)
-                assert_equal_w_dt(np.count_nonzero(m, axis=0),
-                                  expected, err_msg=err_msg)
+                expected = np.array([0, 0, 0])
+                assert_equal(np.count_nonzero(m, axis=0),
+                             expected, err_msg=err_msg)
 
-                expected = np.array([0, 0], dtype=np.intp)
-                assert_equal_w_dt(np.count_nonzero(m, axis=1),
-                                  expected, err_msg=err_msg)
+                expected = np.array([0, 0])
+                assert_equal(np.count_nonzero(m, axis=1),
+                             expected, err_msg=err_msg)
 
                 expected = np.array(0)
                 assert_equal(np.count_nonzero(m, axis=(0, 1)),
@@ -1110,19 +1106,6 @@ class TestNonzero(TestCase):
         tgt = [[0, 1, 1], [0, 0, 2]]
 
         assert_equal(m.nonzero(), tgt)
-
-    def test_nonzero_invalid_object(self):
-        # gh-9295
-        a = np.array([np.array([1, 2]), 3])
-        assert_raises(ValueError, np.nonzero, a)
-
-        class BoolErrors:
-            def __bool__(self):
-                raise ValueError("Not allowed")
-            def __nonzero__(self):
-                raise ValueError("Not allowed")
-
-        assert_raises(ValueError, np.nonzero, np.array([BoolErrors()]))
 
 
 class TestIndex(TestCase):

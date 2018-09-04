@@ -627,7 +627,7 @@ def histogram(a, bins=10, range=None, normed=False, weights=None,
     array([ 0.5,  0. ,  0.5,  0. ,  0. ,  0.5,  0. ,  0.5,  0. ,  0.5])
     >>> hist.sum()
     2.4999999999999996
-    >>> np.sum(hist * np.diff(bin_edges))
+    >>> np.sum(hist*np.diff(bin_edges))
     1.0
 
     .. versionadded:: 1.11.0
@@ -783,7 +783,7 @@ def histogram(a, bins=10, range=None, normed=False, weights=None,
         bins = bin_edges
     else:
         bins = asarray(bins)
-        if np.any(bins[:-1] > bins[1:]):
+        if (np.diff(bins) < 0).any():
             raise ValueError(
                 'bins must increase monotonically.')
 
@@ -1685,28 +1685,23 @@ def gradient(f, *varargs, **kwargs):
     len_axes = len(axes)
     n = len(varargs)
     if n == 0:
-        # no spacing argument - use 1 in all axes
         dx = [1.0] * len_axes
-    elif n == 1 and np.ndim(varargs[0]) == 0:
-        # single scalar for all axes
-        dx = varargs * len_axes
-    elif n == len_axes:
-        # scalar or 1d array for each axis
+    elif n == len_axes or (n == 1 and np.isscalar(varargs[0])):
         dx = list(varargs)
         for i, distances in enumerate(dx):
-            if np.ndim(distances) == 0:
+            if np.isscalar(distances):
                 continue
-            elif np.ndim(distances) != 1:
-                raise ValueError("distances must be either scalars or 1d")
             if len(distances) != f.shape[axes[i]]:
-                raise ValueError("when 1d, distances must match "
+                raise ValueError("distances must be either scalars or match "
                                  "the length of the corresponding dimension")
-            diffx = np.diff(distances)
+            diffx = np.diff(dx[i])
             # if distances are constant reduce to the scalar case
             # since it brings a consistent speedup
             if (diffx == diffx[0]).all():
                 diffx = diffx[0]
             dx[i] = diffx
+        if len(dx) == 1:
+            dx *= len_axes
     else:
         raise TypeError("invalid number of arguments")
 
@@ -1756,7 +1751,7 @@ def gradient(f, *varargs, **kwargs):
         # result allocation
         out = np.empty_like(y, dtype=otype)
 
-        uniform_spacing = np.ndim(dx[i]) == 0
+        uniform_spacing = np.isscalar(dx[i])
 
         # Numerical differentiation: 2nd order interior
         slice1[axis] = slice(1, -1)
