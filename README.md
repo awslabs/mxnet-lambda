@@ -101,7 +101,7 @@ curl -H "Content-Type: application/json" -X POST https://MY_URL/predict -d '{"ur
 - compile MXNet on Amazon Linux (AMI name: amzn-ami-hvm-2016.03.3.x86_64-gp2)
 
 ```
-$ git clone --recursive https://github.com/dmlc/mxnet mxnet
+$ git clone --recursive https://github.com/apache/incubator-mxnet mxnet
 $ cd mxnet 
 $ make -j $(nproc) USE_OPENCV=0 USE_CUDNN=0 USE_CUDA=0 USE_BLAS=openblas 
 ```
